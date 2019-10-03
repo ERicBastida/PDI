@@ -210,7 +210,7 @@ tp5 = TP5()
 # tp5.induccion()
 # tp5.ejercicio1()
 # tp5.ejercicio2()
-tp5.ejercicio4()
+# tp5.ejercicio4()
 tp5.ejercicio5()
 
 
