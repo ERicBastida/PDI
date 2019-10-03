@@ -169,13 +169,46 @@ class TP5:
 
         plt.show()
 
+    def ejercicio2(self):
+
+        img = cv2.imread(self.__basePATH+"moon.jpg",0)
+        M,N = img.shape[:2]
+
+        plt.subplot(221)
+        plt.imshow(img,cmap='gray')
+        # filtro = pdi.filtro_ideal(M,N,0.2)
+        # filtro = pdi.filtro_butterworth(M,N,0.2,20)
+        filtro = pdi.filtro_gaussiaon(M,N,0.001)
+        plt.subplot(222)
+        # filtro2show= np.array([filtro,np.zeros(filtro.shape)]).swapaxes(0,2).swapaxes(0,1)
+        plt.imshow(filtro,cmap='gray')
+
+
+        result = pdi.filtro_img(img,filtro)
+
+        plt.subplot(223)
+        plt.imshow(result,cmap='gray')
+
+        plt.subplot(224)
+        imgf=cv2.dft(np.float32(img), flags=cv2.DFT_REAL_OUTPUT)
+
+
+        plt.imshow(20*np.log(np.abs(imgf)),cmap='gray')
+
+        plt.show()
+
+        
+
+
+        
 
 
         
 
 tp5 = TP5()
-tp5.induccion()
+# tp5.induccion()
 # tp5.ejercicio1()
+tp5.ejercicio2()
 
             
 # f = np.array(
