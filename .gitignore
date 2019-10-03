@@ -1,5 +1,6 @@
 Enunciados/**
 PDI_extras/**
 venv/**
-
 img/TP6 - Restauracion y Reconstruccion/ejemploRuido.psd
+acy.py
+*.pyc

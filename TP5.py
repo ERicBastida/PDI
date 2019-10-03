@@ -49,7 +49,6 @@ def Fourier(img,u,v):
 class TP5:
     __basePATH = "img/TP5 - Fourier/"
 
-
     def circle(self,M,N,radius, deltaX = 0, deltaY = 0) :
 
 
@@ -65,7 +64,6 @@ class TP5:
         array = np.zeros((M, N))
         array[mask] = 1
         return  array
-
 
     def induccion(self):
 
@@ -190,14 +188,59 @@ class TP5:
         plt.imshow(result,cmap='gray')
 
         plt.subplot(224)
-        imgf=cv2.dft(np.float32(img), flags=cv2.DFT_REAL_OUTPUT)
+        spec = pdi.spectrum(img)
 
 
-        plt.imshow(20*np.log(np.abs(imgf)),cmap='gray')
+        plt.imshow(spec,cmap='gray')
 
         plt.show()
 
-        
+    def ejercicio4(self):
+
+
+        img = cv2.imread(self.__basePATH+ "camaleon.tif",0)
+        Mo, No = img.shape
+
+        img = pdi.optimalDFTImg(img)
+        M, N = img.shape
+
+
+        filter = pdi.filterGaussian(M,N,0.001,PA=True)
+
+        A = 100
+        a = (A-1)
+
+        b= 1
+
+        H = np.ones(filter.shape) * a + filter*b
+
+
+        resultado = pdi.filterImg(img,H)
+
+        img = img[0:Mo,0:No]
+        resultado = resultado[0:Mo,0:No]
+
+
+
+
+        plt.subplot(221),plt.imshow(img, cmap = 'gray')
+        plt.title('Imagen Original'), plt.xticks([]), plt.yticks([])
+
+        plt.subplot(222),plt.imshow(pdi.spectrum(img), cmap = 'gray')
+        plt.title('DFT de la original '), plt.xticks([]), plt.yticks([])
+
+        plt.subplot(223),plt.imshow(np.fft.ifftshift(H), cmap = 'gray')
+        plt.title('Filtro Gaussiano'), plt.xticks([]), plt.yticks([])
+
+        plt.subplot(224),plt.imshow(pdi.spectrum(H), cmap = 'gray')
+        plt.title('DFT Filtro'), plt.xticks([]), plt.yticks([])
+
+
+        plt.figure()
+        plt.imshow(resultado, cmap='gray')
+
+        plt.show()
+
 
 
         
@@ -208,32 +251,10 @@ class TP5:
 tp5 = TP5()
 # tp5.induccion()
 # tp5.ejercicio1()
-tp5.ejercicio2()
+# tp5.ejercicio2()
+tp5.ejercicio4()
 
             
-# f = np.array(
-#     [[0,255],[0,255]]
-# )
-
-# F = np.zeros((2,2),dtype=complex)
-
-# F[0,0]= Fourier(f,0,0)
-
-# F[1,0]= Fourier(f,1,0)
-
-# F[0,1]= Fourier(f,0,1)
-
-# F[1,1]= Fourier(f,1,1)
-# plt.subplot(121)
-# plt.imshow( np.abs(F),cmap='gray')
-
-# plt.subplot(122)
-# plt.imshow( np.abs(np.fft.fft2(f)),cmap='gray')
-
-# plt.show()
-
-
-
 
 
 
@@ -317,46 +338,4 @@ tp5.ejercicio2()
 # plt.show()
 
 # Ejercicio 4
-
-# img = cv2.imread("img/camaleon.tif",0)
-# Mo, No = img.shape
-#
-# img = optimalDFTImg(img)
-# M, N = img.shape
-#
-#
-# filter = filterGaussian(M,N,0.01,PA=True)
-# A = 100
-# a = (A-1)
-#
-# b= 3
-#
-# H = np.ones(filter.shape) * a + filter*b
-#
-#
-# resultado = filterImg(img,H)
-#
-# img = img[0:Mo,0:No]
-# resultado = resultado[0:Mo,0:No]
-#
-#
-#
-#
-# plt.subplot(221),plt.imshow(img, cmap = 'gray')
-# plt.title('Imagen Original'), plt.xticks([]), plt.yticks([])
-#
-# plt.subplot(222),plt.imshow(spectrum(img), cmap = 'gray')
-# plt.title('DFT '), plt.xticks([]), plt.yticks([])
-#
-# plt.subplot(223),plt.imshow(np.fft.ifftshift(H), cmap = 'gray')
-# plt.title('Filtro Gaussiano'), plt.xticks([]), plt.yticks([])
-#
-# plt.subplot(224),plt.imshow(spectrum(H), cmap = 'gray')
-# plt.title('DFT Filtro'), plt.xticks([]), plt.yticks([])
-#
-#
-# plt.figure()
-# plt.imshow(resultado, cmap='gray')
-#
-# plt.show()
 

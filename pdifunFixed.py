@@ -62,7 +62,6 @@ def spectrum(img):
 
     return modulo
 
-
 def rotate(img, angle):
     """Rotaci�n de la imagen sobre el centro"""
     r = cv.getRotationMatrix2D((img.shape[0] / 2, img.shape[1] / 2), angle, 1.0)
@@ -111,7 +110,7 @@ def filterButterworth(rows, cols, corte, order):
     # corte = w en imagen de lado 1
     # 1 \over 1 + {D \over w}^{2n}
     magnitud = np.zeros((rows, cols))
-    corte *= rows;
+    corte *= rows
     for k in range(rows):
         for l in range(cols):
             d2 = dist([k, l], [rows // 2, cols // 2])
@@ -518,21 +517,21 @@ def filtro_img(img,filtro_magnitud):
     #como la fase del filtro es 0 la conversi�n de polar a cartesiano es directa (magnitud->x, fase->y)
     filtro=np.array([filtro_magnitud,np.zeros(filtro_magnitud.shape)]).swapaxes(0,2).swapaxes(0,1)
     
-    plt.subplot(221)
-    plt.imshow(filtro_magnitud,cmap='gray')
+    # plt.subplot(221)
+    # plt.imshow(filtro_magnitud,cmap='gray')
 
     imgf=cv.dft(np.float32(img), flags=cv.DFT_COMPLEX_OUTPUT)
 
-    plt.subplot(222)
-    plt.imshow(20*np.log(np.abs(imgf[:,:,0])),cmap='gray')
+    # plt.subplot(222)
+    # plt.imshow(20*np.log(np.abs(imgf[:,:,0])),cmap='gray')
 
     resultFH =cv.mulSpectrums(imgf, np.float32(filtro), cv.DFT_ROWS)
-    plt.subplot(223)
-    plt.imshow(np.log(np.abs(resultFH[:,:,0])),cmap='gray')
+    # plt.subplot(223)
+    # plt.imshow(np.log(np.abs(resultFH[:,:,0])),cmap='gray')
     result_fg = cv.idft(resultFH, flags=cv.DFT_REAL_OUTPUT | cv.DFT_SCALE)
-    plt.subplot(224)
-    plt.imshow(np.abs(result_fg),cmap='gray')
-    plt.show()
+    # plt.subplot(224)
+    # plt.imshow(np.abs(result_fg),cmap='gray')
+    # plt.show()
     return result_fg
 
 def dist(a,b):
@@ -567,7 +566,7 @@ def filtro_butterworth(rows, cols, corte, order):
     for k in range(rows):
         for l in range(cols):
             d2 = dist([k,l],[rows//2,cols//2])
-            magnitud[k,l] = 1.0/(1 + (d2/corte/corte)**order)
+            magnitud[k,l] = 1.0/(1 + (d2/corte)**(order+order))
 
     return np.fft.ifftshift(magnitud)
 
