@@ -195,51 +195,9 @@ class TP5:
 
         plt.show()
 
-    def ejercicio4(self):
+    def ejercicio5(self):
 
-
-        img = cv2.imread(self.__basePATH+ "camaleon.tif",0)
-        Mo, No = img.shape
-
-        img = pdi.optimalDFTImg(img)
-        M, N = img.shape
-
-
-        filter = pdi.filterGaussian(M,N,0.001,PA=True)
-
-        A = 100
-        a = (A-1)
-
-        b= 1
-
-        H = np.ones(filter.shape) * a + filter*b
-
-
-        resultado = pdi.filterImg(img,H)
-
-        img = img[0:Mo,0:No]
-        resultado = resultado[0:Mo,0:No]
-
-
-
-
-        plt.subplot(221),plt.imshow(img, cmap = 'gray')
-        plt.title('Imagen Original'), plt.xticks([]), plt.yticks([])
-
-        plt.subplot(222),plt.imshow(pdi.spectrum(img), cmap = 'gray')
-        plt.title('DFT de la original '), plt.xticks([]), plt.yticks([])
-
-        plt.subplot(223),plt.imshow(np.fft.ifftshift(H), cmap = 'gray')
-        plt.title('Filtro Gaussiano'), plt.xticks([]), plt.yticks([])
-
-        plt.subplot(224),plt.imshow(pdi.spectrum(H), cmap = 'gray')
-        plt.title('DFT Filtro'), plt.xticks([]), plt.yticks([])
-
-
-        plt.figure()
-        plt.imshow(resultado, cmap='gray')
-
-        plt.show()
+        pass
 
 
 
@@ -253,89 +211,8 @@ tp5 = TP5()
 # tp5.ejercicio1()
 # tp5.ejercicio2()
 tp5.ejercicio4()
+tp5.ejercicio5()
+
 
             
-
-
-
-
-
-
-
-
-
-
-
-# cv2.imshow("Linea",optimalDFTImg(rectangulo*255))
-# cv2./waitKey(0)
-#
-
-
-# EJERCICIO 2 - FILTROS PASA-BAJO Y PASA-ALTOS
-
-# img = cv2.imread("img/fruta.jpg",0)
-# Mo, No = img.shape
-#
-# # img = np.float(img)
-# img = optimalDFTImg(img)
-# M, N = img.shape
-#
-# # filter = filterIdeal(M,N,0.05)
-# # filter = filterButterworth(M,N,0.005,100)
-# filter = filterGaussian(M,N,0.005)
-#
-# resultado = filterImg(img,filter)
-#
-# img = img[0:Mo,0:No]
-# resultado = resultado[0:Mo,0:No]
-#
-#
-#
-#
-# plt.subplot(131),plt.imshow(img, cmap = 'gray')
-# plt.title('Imagen Original'), plt.xticks([]), plt.yticks([])
-#
-# plt.subplot(133),plt.imshow(resultado, cmap = 'gray')
-# plt.title('Resultado '), plt.xticks([]), plt.yticks([])
-#
-# plt.subplot(132),plt.imshow(np.fft.ifftshift(filter), cmap = 'gray')
-# plt.title('Filtro ideal'), plt.xticks([]), plt.yticks([])
-#
-#
-# plt.show()
-#
-# Inciso 3
-# img = cv2.imread("img/fruta.jpg",0)
-# Mo, No = img.shape
-#
-# # img = np.float(img)
-# img = optimalDFTImg(img)
-# M, N = img.shape
-#
-#
-# filter = filterGaussian(M,N,0.005)
-#
-# resultado = filterImg(img,filter)
-#
-# img = img[0:Mo,0:No]
-# resultado = resultado[0:Mo,0:No]
-#
-#
-#
-#
-# plt.subplot(221),plt.imshow(img, cmap = 'gray')
-# plt.title('Imagen Original'), plt.xticks([]), plt.yticks([])
-#
-# plt.subplot(222),plt.imshow(spectrum(img), cmap = 'gray')
-# plt.title('DFT '), plt.xticks([]), plt.yticks([])
-#
-# plt.subplot(223),plt.imshow(np.fft.ifftshift(filter), cmap = 'gray')
-# plt.title('Filtro Gaussiano'), plt.xticks([]), plt.yticks([])
-#
-# plt.subplot(224),plt.imshow(spectrum(filter), cmap = 'gray')
-# plt.title('DFT Filtro'), plt.xticks([]), plt.yticks([])
-#
-# plt.show()
-
-# Ejercicio 4
 
