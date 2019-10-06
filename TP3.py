@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 import math
 import pdifunFixed as pdi
-
+np.uint8
 
 # img = cv2.imread('img/huang1.jpg',0)
 # plt.figure("Original Image")
@@ -223,6 +223,35 @@ class TP3:
         
     #     return mean, deviation
 
+    def pruebasEQ(self):
+        img = cv2.imread(self.__BASEPATH + "/prueba_EQ.jpg",0)
+
+        plt.subplot(221)
+        plt.imshow(img,cmap='gray')
+
+        
+        plt.subplot(222)
+        histogram1 = cv2.calcHist([img],[0],None,[256],[0,256])
+        plt.stem(range(len(histogram1)),histogram1)
+
+        imgEQ , funcEq = self.equalizationHistogram(img)
+        
+        plt.subplot(223)
+        plt.imshow(np.uint8(imgEQ),cmap='gray')
+
+        plt.subplot(224)
+        plt.stem(range(len(funcEq)),funcEq)
+
+        plt.figure()
+
+        histogram2 = cv2.calcHist([imgEQ],[0],None,[256],[0,256])
+        plt.stem(range(len(histogram2)),histogram2)
+
+
+
+        plt.show()
+
+
     def ejercicio4(self):
         img = cv2.imread(self.__BASEPATH + "/hubble.tif",0)
 
@@ -318,5 +347,6 @@ if __name__ == "__main__":
     tp3 = TP3()
 
     # tp3.ejercicio4()
-    tp3.ejercicio5()
+    # tp3.ejercicio5()
     # tp3.pruebas()
+    tp3.pruebasEQ()

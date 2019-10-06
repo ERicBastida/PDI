@@ -52,12 +52,12 @@ def optimalDFTImg(img):
     return cv.copyMakeBorder(img, 0, h - img.shape[0], 0, w - img.shape[1], cv.BORDER_CONSTANT)
 
 def spectrum(img):
-    """Calcula y muestra el m�dulo logart�mico de la DFT de img."""
+    """Calcula y muestra el modulo logartimico de la DFT de img."""
     # img=optimalDFTImg(img)
 
     imgf = cv.dft(np.float32(img), flags=cv.DFT_COMPLEX_OUTPUT)
     modulo = np.log(cv.magnitude(imgf[:, :, 0], imgf[:, :, 1]) + 1)
-    modulo = np.fft.fftshift(modulo)
+    #modulo = np.fft.fftshift(modulo)
     modulo = cv.normalize(modulo, modulo, 0, 1, cv.NORM_MINMAX)
 
     return modulo
@@ -517,21 +517,25 @@ def filtro_img(img,filtro_magnitud):
     #como la fase del filtro es 0 la conversi�n de polar a cartesiano es directa (magnitud->x, fase->y)
     filtro=np.array([filtro_magnitud,np.zeros(filtro_magnitud.shape)]).swapaxes(0,2).swapaxes(0,1)
     
-    # plt.subplot(221)
-    # plt.imshow(filtro_magnitud,cmap='gray')
+    plt.subplot(221)
+    plt.title('Espectro del filtro')
+    plt.imshow(filtro_magnitud,cmap='gray')
 
     imgf=cv.dft(np.float32(img), flags=cv.DFT_COMPLEX_OUTPUT)
 
-    # plt.subplot(222)
-    # plt.imshow(20*np.log(np.abs(imgf[:,:,0])),cmap='gray')
+    plt.subplot(222)
+    plt.title('Filtro en el dominio espacial')
+    plt.imshow(20*np.log(np.abs(imgf[:,:,0])),cmap='gray')
 
     resultFH =cv.mulSpectrums(imgf, np.float32(filtro), cv.DFT_ROWS)
-    # plt.subplot(223)
-    # plt.imshow(np.log(np.abs(resultFH[:,:,0])),cmap='gray')
+    plt.subplot(223)
+    plt.title('Multiplicacion')
+    plt.imshow(np.log(np.abs(resultFH[:,:,0])),cmap='gray')
     result_fg = cv.idft(resultFH, flags=cv.DFT_REAL_OUTPUT | cv.DFT_SCALE)
-    # plt.subplot(224)
-    # plt.imshow(np.abs(result_fg),cmap='gray')
-    # plt.show()
+    plt.subplot(224)
+    plt.title('Resultado del producto')
+    plt.imshow(np.abs(result_fg),cmap='gray')
+    plt.show()
     return result_fg
 
 def dist(a,b):

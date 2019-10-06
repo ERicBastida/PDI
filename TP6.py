@@ -202,7 +202,7 @@ class TP6:
         spectrum = pdi.spectrum(img)
 
         val, spectrum2 = cv2.threshold(spectrum,0.8,1,cv2.THRESH_BINARY)
-        plt.imshow()
+        # plt.imshow()
         result = np.where(spectrum2 == np.amax(spectrum2))
 
        
