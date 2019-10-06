@@ -42,8 +42,8 @@ class TP6:
     __BASEPATH= "img/TP6 - Restauracion y Reconstruccion/"
     
 
-
-    def orderStatistcFilter(self,img,ksize,func):
+    
+    def media_no_lineal(self,img,ksize,func):
         """
         img: Source
         ksize: Odd number
@@ -192,10 +192,54 @@ class TP6:
 
         # cv2.waitKey(0)
 
+    def ejercicio4(self):
+        img = cv2.imread(self.__BASEPATH+"img_degradada.tif",0)
+        
+        plt.subplot(131)
+        plt.imshow(img,cmap='gray')
+
+        plt.subplot(132)
+        spectrum = pdi.spectrum(img)
+
+        val, spectrum2 = cv2.threshold(spectrum,0.8,1,cv2.THRESH_BINARY)
+        plt.imshow()
+        result = np.where(spectrum2 == np.amax(spectrum2))
+
+       
+        print('Tuple of arrays returned : ', result)
+        
+        print('List of coordinates of maximum value in Numpy array : ')
+        # zip the 2 arrays to get the exact coordinates
+        listOfCordinates = list(zip(result[0], result[1]))
+        # travese over the list of cordinates
+        for cord in listOfCordinates:
+            print(cord)
+        
+        d = pdi.dist(listOfCordinates[2][0],listOfCordinates[2][1] )
+        print "Distancia : ", d
+
+        M,N = spectrum2.shape[:2]
+
+        filtro = pdi.filterIdeal(M,N,0.2)
+
+        resultado = pdi.filtro_img(img,filtro)
+
+        plt.subplot(133)
+
+        plt.imshow(resultado,cmap='gray')
+
+
+
+        # result = np.uint8(spectrum2)
+        # plt.imshow(result,cmap='gray')
+        
+        
+        plt.show()
 
 if __name__=="__main__":
     
     tp6 = TP6()
 
-    tp6.ejercicio1()
+    # tp6.ejercicio1()
+    tp6.ejercicio4()
     # tp6.filtrosNoLineales()
