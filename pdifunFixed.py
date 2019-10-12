@@ -57,7 +57,7 @@ def spectrum(img):
 
     imgf = cv.dft(np.float32(img), flags=cv.DFT_COMPLEX_OUTPUT)
     modulo = np.log(cv.magnitude(imgf[:, :, 0], imgf[:, :, 1]) + 1)
-    #modulo = np.fft.fftshift(modulo)
+    modulo = np.fft.fftshift(modulo)
     modulo = cv.normalize(modulo, modulo, 0, 1, cv.NORM_MINMAX)
 
     return modulo
@@ -554,17 +554,40 @@ def filtro_gaussiaon(rows,cols,corte):
 
     return np.fft.ifftshift(magnitud)
 
-def filtro_ideal(rows, cols, corte):
+def circle(M,N,radius, deltaX = 0, deltaY = 0) :
+
+ 
+
+    n = min(M,N)
+    a = int(M / 2) #y
+    b = int(N / 2)
+    r = radius
+
+    y, x = np.ogrid[-a:M - a, -b:N - b]
+    mask = (x - deltaX)*( x - deltaX) + (y -deltaY) * (y - deltaY)  <= r * r
+    
+    if (deltaY or deltaX):
+        mask += (x + deltaX)*( x + deltaX) + (y +deltaY) * (y + deltaY)  <= r * r
+
+    array = np.zeros((M, N))
+    array[mask] = 1
+    return  array
+
+def filtro_ideal(rows, cols, corte,dx=0,dy=0,PasaBanda=True):
     # Filtro de magnitud ideal
     magnitud = np.zeros((rows, cols))
-    magnitud = cv.circle(magnitud, (cols//2, rows//2), int(rows*corte), 1, -1)
+    # magnitud = cv.circle(magnitud, (cols//2 - dx, rows//2-dy), int(rows*corte), 1, -1)
+    magnitud = circle(rows,cols,corte,dx,dy)
+    if (not(PasaBanda) ):
+        I = np.ones(magnitud.shape)
+        magnitud = I - magnitud 
 
     return np.fft.ifftshift(magnitud)
 
 def filtro_butterworth(rows, cols, corte, order):
-    # Filtro de magnitud Butterworth
-    #corte = w en imagen de lado 1
-    #1 \over 1 + {D \over w}^{2n}
+    """ Filtro de magnitud Butterworth
+    corte = w en imagen de lado 1
+    1 \over 1 + {D \over w}^{2n}"""
     magnitud = np.zeros((rows, cols))
     corte *= rows
     for k in range(rows):
@@ -601,17 +624,17 @@ def motion_blur(size, a,  b):
 def bordes_Roberts(img):
     Gx = np.array(
         [
-            [-1 , 0 , 0],
-            [ 0 , 1 , 0],
-            [ 0 , 0 , 0]
+            [ 0 , 0 , 0],
+            [ 0 , -1, 0],
+            [ 0 , 0 , 1]
 
         ]
     )
     Gy = np.array(
         [
-            [0, -1, 0],
-            [1,  0, 0],
-            [0,  0, 0]
+            [0,  0,  0],
+            [0,  0, -1],
+            [0,  1,  0]
 
         ]
     )

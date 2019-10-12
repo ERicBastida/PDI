@@ -195,10 +195,9 @@ class TP6:
     def ejercicio4(self):
         img = cv2.imread(self.__BASEPATH+"img_degradada.tif",0)
         
-        plt.subplot(131)
-        plt.imshow(img,cmap='gray')
 
-        plt.subplot(132)
+
+ 
         spectrum = pdi.spectrum(img)
 
         val, spectrum2 = cv2.threshold(spectrum,0.8,1,cv2.THRESH_BINARY)
@@ -219,14 +218,23 @@ class TP6:
         print "Distancia : ", d
 
         M,N = spectrum2.shape[:2]
+        D = pdi.dist([0,0],[0.5*M,0.5*N])
+        print D 
+        Do = float(114/D)
 
-        filtro = pdi.filterIdeal(M,N,0.2)
+        print "Frecuencia de corte : ", Do
+        
+        filtro = pdi.filtro_ideal(M,N,10,70,90,False)
 
         resultado = pdi.filtro_img(img,filtro)
 
-        plt.subplot(133)
+    
 
         plt.imshow(resultado,cmap='gray')
+
+
+
+
 
 
 
@@ -243,3 +251,5 @@ if __name__=="__main__":
     # tp6.ejercicio1()
     tp6.ejercicio4()
     # tp6.filtrosNoLineales()
+
+    
