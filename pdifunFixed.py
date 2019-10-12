@@ -7,6 +7,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 import cv2
 import math
+from scipy import ndimage
 
 def histograma(img):
     result = cv2.calcHist([img],[0],None,[256],[0,256])
@@ -62,10 +63,17 @@ def spectrum(img):
 
     return modulo
 
+def rotar(img,angle):
+    return ndimage.rotate(img,angle)
+
 def rotate(img, angle):
-    """Rotaci�n de la imagen sobre el centro"""
-    r = cv.getRotationMatrix2D((img.shape[0] / 2, img.shape[1] / 2), angle, 1.0)
-    return cv.warpAffine(img, r, img.shape)
+    """Rotacion de la imagen sobre el centro"""
+    if (angle != 0):
+        r = cv.getRotationMatrix2D((img.shape[0] / 2, img.shape[1] / 2), angle, 1.0)
+        result = cv.warpAffine(img, r, img.shape)
+        return result
+    else:
+        return img
 
 def filterImg(img, filtro_magnitud):
     """Filtro para im�genes de un canal"""
@@ -346,7 +354,6 @@ def noisy(noise_typ,image):
 
 def media_aritmetica(img,m,n):
     kernel = np.ones((m, n), np.float32) / (m * n)
-
     return cv2.filter2D(img, -1, kernel)
 
 def media_armonica(img,m,n):
@@ -372,16 +379,14 @@ def generarImagenPatron():
     M = cv.circle(M, (150, 150), 70, 230, -1)
     return M
 
-def gr_gaussiano(img, mu, sigma):
+def gr_gaussiano(img,mean, sigma):
     # img: imagen a la cual se le agrega ruido
     # mu: media
     # sigma: desviacion estandar
-    [alto, ancho] = img.shape
-    img_re = cv.normalize(img, 0, 1, norm_type=cv.NORM_MINMAX, dtype=cv.CV_32F)
-    ruido = np.random.normal(mu, sigma, [alto, ancho]).astype('f')
-    img_r = img_re + ruido
-    img_r = cv.normalize(img_r, 0, 1, norm_type=cv.NORM_MINMAX, dtype=cv.CV_32F)
-    return img_r
+    gauss = np.random.normal(mean,sigma,img.shape)
+    gauss = np.float32(gauss)
+
+    return gauss
 
 def gr_rayleigh(img, a):
     (alto, ancho) = img.shape
@@ -616,12 +621,70 @@ def motion_blur(size, a,  b):
             else:
                 mag=1 #lim{x->0} sin(x)/x
 
-            transformation[k,l] = mag*np.exp(complex(0,1)*pi_v);
+            transformation[k,l] = mag*np.exp(complex(0,1)*pi_v)
 
 
     return np.fft.fftshift(transformation)
+#--------------------- SEGMENTACION | CAPITULO 10  | TP 7 ---------------------
+def deteccionPuntos(img):
 
-def bordes_Roberts(img):
+    D2 = np.array(
+        [
+            [1,  1, 1],
+            [1, -8, 1],
+            [1,  1, 1]
+
+        ]
+    )
+    return cv2.filter2D(img, -1, D2)
+
+def deteccionLineas(img,ksize, grad= 0):
+    "Detecta lineas de un pixel de grosor en la direccion segun grad (Grados)"
+
+    mask = np.array(
+        [
+            [-1, -1, -1],
+            [ 2,  2,  2],
+            [-1, -1, -1]
+
+        ]
+    )
+
+    # mask_r = rotate(mask,grad)
+    mask_r = rotar(mask,grad)
+    # mask_r = np.rot90(mask)   #rotate(mask,grad)
+
+    plt.figure("Mascara para las lineas")
+    plt.imshow(mask_r,cmap='gray')
+    plt.show()
+
+    result = cv2.filter2D(img,-1,mask_r)
+
+    return result
+
+def bordesG_1_derivada(img):
+    Gx = np.array(
+        [
+            [ 0 , 0 , 0],
+            [ 0 , -1, 0],
+            [ 0 , 1 , 0]
+
+        ]
+    )
+    Gy = np.array(
+        [
+            [0,   0,  0],
+            [0,  -1,  1],
+            [0,   0,  0]
+
+        ]
+    )
+    bordes_x = cv2.filter2D(img,-1,Gx)
+    bordes_y = cv2.filter2D(img,-1,Gy)
+
+    return bordes_x, bordes_y
+
+def bordesG_Roberts(img):
     Gx = np.array(
         [
             [ 0 , 0 , 0],
@@ -641,7 +704,7 @@ def bordes_Roberts(img):
     bordes_x = cv2.filter2D(img,-1,Gx)
     bordes_y = cv2.filter2D(img,-1,Gy)
 
-    return bordes_x+bordes_y
+    return bordes_x,bordes_y
 
 def bordes_Lapla (img):
     D1 = np.array(
@@ -683,7 +746,7 @@ def bordes_LoG(img):
 # 2. Incorpore a la funcion anterior los detectores de bordes de Prewitt, Sobel, Laplaciano y LoG, permitiendo al usuario
 #  seleccionar cualquiera de ellos. Compare los resultados obtenidos con los diferentes metodos.
 
-def bordes_Prewitt(img):
+def bordesG_Prewitt(img):
     Gx = np.zeros((3,3))
     Gy = np.zeros((3,3))
     Gx[0,:] = -1
@@ -695,9 +758,9 @@ def bordes_Prewitt(img):
     bordes_x = cv2.filter2D(img,-1,Gx)
     bordes_y = cv2.filter2D(img,-1,Gy)
 
-    return bordes_x+bordes_y
+    return bordes_x,bordes_y
 
-def bordes_Sobel(img):
+def bordesG_Sobel(img):
     Gx = np.zeros((3,3))
     Gy = np.zeros((3,3))
     Gx[0,:] = -1
@@ -710,16 +773,14 @@ def bordes_Sobel(img):
     bordes_x = cv2.filter2D(img,-1,Gx)
     bordes_y = cv2.filter2D(img,-1,Gy)
 
-    return bordes_x+bordes_y
+    return bordes_x,bordes_y
 # 3. Cargue la imagen mosquito.jpg y genere a partir de ella versiones con ruido de tipo gaussiano con media cero
 
 def hough_Transform(img,threshold,thita_i = None,thita_f = None):
     """ Transformada de Hough
-    Esta funcion ademas de calcular la transformada de Houhg se puede establecer un rango de acumuladores, como tambien el angulo aproximado de lineas que se desee detectar.
+    Esta funcion ademas de calcular la transformada de Hough se puede establecer un rango de acumuladores, como tambien el angulo aproximado de lineas que se desee detectar.
     Tener en mente que thita = [0 , pi / 2] y rho = [0, D] , donde D es la distancia diagonal de la imagen (en pixeles)
     """
-
-
 
     edges = cv2.Canny(img, 50, 150, apertureSize=3)
 
@@ -735,6 +796,7 @@ def hough_Transform(img,threshold,thita_i = None,thita_f = None):
     else:
         lines = cv2.HoughLines(edges, 1, np.pi/180, threshold)
     print len(lines)
+
     if lines.all() != None :#or lines.all() :
         for line in lines:
             l = line[0] #No se porque envia dentro de una lista otra lista con una lista conteniendo el rho y thita (Hay que acceder 3 veces)
