@@ -5,6 +5,15 @@
 from  pdifunFixed import *
 from matplotlib import pyplot as plt
 
+class TP7:
+    __basePath = "img/TP7 - Segmentacion/"
+
+    def ejercicio1(self, letra):
+        img = cv2.imread(self.__basePath, 0)
+        
+
+
+
 
 if __name__ == '__main__':
 
@@ -21,6 +30,7 @@ if __name__ == '__main__':
     plt.show()
 
 
+    
 
 
     # # Make plot with vertical (default) colorbar
