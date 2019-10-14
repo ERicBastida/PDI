@@ -5,7 +5,7 @@ from __future__ import division
 import cv2 as cv
 from matplotlib import pyplot as plt
 import numpy as np
-import cv2
+import cv2 as cv2
 import math
 from scipy import ndimage
 
@@ -33,7 +33,7 @@ def sumaIMG(imgs):
 
 def sampling(img,factor):
     "Muestrea la imagen seg�n el factor ingresado"
-    M,N,channels = img.shape
+    M,N,_ = img.shape
 
     step_x = M//factor
     step_y = N//factor
@@ -139,13 +139,13 @@ def motionBlur(size, a, b):
             u = (l - cols / 2) / cols
             v = (k - rows / 2) / rows
 
-            pi_v = math.pi * (u * a + v * b);
+            pi_v = math.pi * (u * a + v * b)
             if pi_v:
                 mag = np.sin(pi_v) / pi_v
             else:
                 mag = 1  # lim{x->0} sin(x)/x
 
-            transformation[k, l] = mag * np.exp(complex(0, 1) * pi_v);
+            transformation[k, l] = mag * np.exp(complex(0, 1) * pi_v)
 
     return np.fft.fftshift(transformation)
 
@@ -625,7 +625,9 @@ def motion_blur(size, a,  b):
 
 
     return np.fft.fftshift(transformation)
+
 #--------------------- SEGMENTACION | CAPITULO 10  | TP 7 ---------------------
+
 def deteccionPuntos(img):
 
     D2 = np.array(
@@ -743,9 +745,6 @@ def bordes_LoG(img):
     return cv2.filter2D(img, -1, D1)
     # return filterImg(img,Gx) + filterImg(img,Gy)
 
-# 2. Incorpore a la funcion anterior los detectores de bordes de Prewitt, Sobel, Laplaciano y LoG, permitiendo al usuario
-#  seleccionar cualquiera de ellos. Compare los resultados obtenidos con los diferentes metodos.
-
 def bordesG_Prewitt(img):
     Gx = np.zeros((3,3))
     Gy = np.zeros((3,3))
@@ -774,49 +773,76 @@ def bordesG_Sobel(img):
     bordes_y = cv2.filter2D(img,-1,Gy)
 
     return bordes_x,bordes_y
-# 3. Cargue la imagen mosquito.jpg y genere a partir de ella versiones con ruido de tipo gaussiano con media cero
 
 def hough_Transform(img,threshold,thita_i = None,thita_f = None):
-    """ Transformada de Hough
-    Esta funcion ademas de calcular la transformada de Hough se puede establecer un rango de acumuladores, como tambien el angulo aproximado de lineas que se desee detectar.
-    Tener en mente que thita = [0 , pi / 2] y rho = [0, D] , donde D es la distancia diagonal de la imagen (en pixeles)
+    """ 
+                                        Transformada de Hough
+    Esta funcion ademas de calcular la transformada de Hough se puede establecer un rango de acumuladores, 
+    como tambien el angulo aproximado de lineas que se desee detectar.
+    -------------------------------------------------------------------------------------------------------
+    Tener en mente que :
+        thita = [0 , 2 pi] y rho > 0 | hasta D , donde D es la distancia diagonal de la imagen (en pixeles)
+        Y thita crece desde el eje y
+    
     """
+    # Color de las lineas RGB
+    COLOR = (255,0,0)
+    # Lineas detectadas
+    linesP = []
+    
+    # Umbral min and max
+    bordes = cv2.Canny(img, 175, 225, apertureSize=3)
+    imgWithLines = img.copy()
+    imgWithLines = cv2.cvtColor(imgWithLines,cv2.COLOR_GRAY2RGB)
 
-    edges = cv2.Canny(img, 50, 150, apertureSize=3)
-
-    cv2.imshow("Debug: Canny", edges)
+    cv2.imshow("Debug: Canny", bordes)
 
     if thita_i != None and thita_f != None:
+        "Hough necesita los angulos en radianes"
         thita_i = (thita_i * np.pi )/ 180
-        thita_f = (thita_f * np.pi )/ 180
-
-        print "Angulos limitrofes que limitan la limitancia de angulos limitantes entre [{} - {}]".format(thita_i,thita_f)
-
-        lines = cv2.HoughLines(edges, 1, np.pi/180, threshold,min_theta=thita_i,max_theta=thita_f)
+        thita_f = (thita_f * np.pi )/ 180        
+                            # IMG | Resol p | Resol Thita | 
+        lines = cv2.HoughLines(bordes, 1, np.pi/180, threshold,min_theta=thita_i,max_theta=thita_f)
     else:
-        lines = cv2.HoughLines(edges, 1, np.pi/180, threshold)
-    print len(lines)
+        lines = cv2.HoughLines(bordes, 1, np.pi/180, threshold)
+    
+    if (lines is None):
+        totalLineas = 0
+    else:
+        totalLineas = len(lines)
+        
+        
 
-    if lines.all() != None :#or lines.all() :
+    print "Total de lineas encontradas: ", totalLineas
+    if totalLineas > 0:
         for line in lines:
-            l = line[0] #No se porque envia dentro de una lista otra lista con una lista conteniendo el rho y thita (Hay que acceder 3 veces)
+            l = line[0] 
 
             rho = l[0]
             theta = l[1]
-            print theta *180 / np.pi
+            # print theta *180 / np.pi
 
             a = np.cos(theta)
             b = np.sin(theta)
             x0 = a * rho
             y0 = b * rho
+
             x1 = int(x0 + 1000 * (-b))
             y1 = int(y0 + 1000 * (a))
             x2 = int(x0 - 1000 * (-b))
             y2 = int(y0 - 1000 * (a))
 
-            cv2.line(img, (x1, y1), (x2, y2), (0, 0, 255), 2)
+            P1 = (x1, y1)
+            P2 = (x2, y2)
+            # Coordanas cartesianas
+            # linesP.append([P1,P2])
+            # Coordenadas Polares
+            linesP.append( (rho,theta) )
+
+            cv2.line(imgWithLines, P1, P2, COLOR, 1)
+        
 
     else:
         print "No se han encontrado lineas segun los parametros especificados."
 
-    return img
+    return imgWithLines, linesP
