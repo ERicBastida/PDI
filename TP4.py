@@ -4,6 +4,60 @@
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
+import pdifunFixed as pdi
+
+def pegar(imgA,mask,imgB):
+    """
+    Recibe dos imagenes A y B con sus respectivos 3 canales
+      además de una mascara que sera la que va a recortar 
+        la imagen B y la va a pegar sobre la imagen A
+    
+    """
+    # Separo las imagenes en sus respectivos canales
+    A1,A2,A3 = cv2.split(imgA)    
+    B1,B2,B3 = cv2.split(imgB)
+
+
+    # Normalizo los canales para realizar la multiplicacion
+    A1 = np.uint8(A1)
+    A2 = np.uint8(A2)
+    A3 = np.uint8(A3)
+    mask = np.uint8(mask)
+    B1 = np.uint8(B1)
+    B2 = np.uint8(B2)
+    B3 = np.uint8(B3)
+
+    mask = cv2.normalize(mask, 0, 1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+
+    C1 = cv2.multiply(mask,B1)
+    C2 = cv2.multiply(mask,B2)
+    C3 = cv2.multiply(mask,B3)
+    
+    
+    mask_inv = cv2.bitwise_not(mask)
+    mask_inv = cv2.normalize(mask_inv, 0, 1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+
+    D1 = cv2.multiply(mask_inv,A1)
+    D2 = cv2.multiply(mask_inv,A2)
+    D3 = cv2.multiply(mask_inv,A3)
+
+    E1 = C1 + D1
+    E2 = C2 + D2
+    E3 = C3 + D3
+
+    result = cv2.merge((E1,E2,E3))
+
+    return result
+
+def segmentadorRGB(img,r):
+    M,N = img.shape[:2]
+
+    for i in range(M):
+        for j in range(N):
+            
+
+def segmentadorHSI(img,deltaH):
+    pass
 
 class TP4:
     __basePath = "img/TP4 - Color/"
@@ -47,12 +101,49 @@ class TP4:
         plt.imshow(imgNEW_RGB_fixedIntensity)
         plt.show()
     
+    def ejercicio2(self):
+        img = cv2.imread(self.__basePath+"rio.jpg")
+
+        R,_,_ = cv2.split(img)
+        plt.figure()
+        plt.imshow(img)
+        plt.show()
+
+        I = np.ones(R.shape)
+
+                               # G     B    R
+        amarillo  = cv2.merge(( 255*I,255*I,0*I) )
+
+        frame_threshold = cv2.inRange(img, (0, 0, 0), (20, 20, 20))
+        # frame_threshold = cv2.bitwise_not(frame_threshold)
 
 
+        resultado = pegar(img,frame_threshold,amarillo)
+
+
+
+
+
+        plt.subplot(131)
+        plt.imshow(img,cmap='gray')
+
+        # histo = pdi.histograma(img)
+        plt.subplot(132)
+        plt.imshow(frame_threshold,cmap='gray')
+
+        plt.subplot(133)
+        plt.imshow(resultado,cmap='gray')
+       
+    
+
+        plt.show()
+
+    
 
 tp4 = TP4()
 
-tp4.ejercicio1()
+# tp4.ejercicio1()
+tp4.ejercicio2()
         
 
 

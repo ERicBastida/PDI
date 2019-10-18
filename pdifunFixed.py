@@ -10,6 +10,7 @@ import math
 from scipy import ndimage
 
 def histograma(img):
+    "Devuelve un vector con la cantidad de pixeles por intensidad de color"
     result = cv2.calcHist([img],[0],None,[256],[0,256])
     return result
 
