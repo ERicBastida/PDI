@@ -2,10 +2,9 @@
 # -*- coding: iso-8859-15 -*-
 
 from __future__ import division
-import cv2 as cv
+import cv2 
 from matplotlib import pyplot as plt
 import numpy as np
-import cv2 as cv2
 import math
 from scipy import ndimage
 
@@ -49,18 +48,18 @@ def sampling(img,factor):
 
 def optimalDFTImg(img):
     """Zero-padding sobre img para alcanzar un tama�o �ptimo para FFT"""
-    h = cv.getOptimalDFTSize(img.shape[0])
-    w = cv.getOptimalDFTSize(img.shape[1])
-    return cv.copyMakeBorder(img, 0, h - img.shape[0], 0, w - img.shape[1], cv.BORDER_CONSTANT)
+    h = cv2.getOptimalDFTSize(img.shape[0])
+    w = cv2.getOptimalDFTSize(img.shape[1])
+    return cv2.copyMakeBorder(img, 0, h - img.shape[0], 0, w - img.shape[1], cv2.BORDER_CONSTANT)
 
 def spectrum(img):
     """Calcula y muestra el modulo logartimico de la DFT de img."""
     # img=optimalDFTImg(img)
 
-    imgf = cv.dft(np.float32(img), flags=cv.DFT_COMPLEX_OUTPUT)
-    modulo = np.log(cv.magnitude(imgf[:, :, 0], imgf[:, :, 1]) + 1)
+    imgf = cv2.dft(np.float32(img), flags=cv2.DFT_COMPLEX_OUTPUT)
+    modulo = np.log(cv2.magnitude(imgf[:, :, 0], imgf[:, :, 1]) + 1)
     modulo = np.fft.fftshift(modulo)
-    modulo = cv.normalize(modulo, modulo, 0, 1, cv.NORM_MINMAX)
+    modulo = cv2.normalize(modulo, modulo, 0, 1, cv2.NORM_MINMAX)
 
     return modulo
 
@@ -70,8 +69,8 @@ def rotar(img,angle):
 def rotate(img, angle):
     """Rotacion de la imagen sobre el centro"""
     if (angle != 0):
-        r = cv.getRotationMatrix2D((img.shape[0] / 2, img.shape[1] / 2), angle, 1.0)
-        result = cv.warpAffine(img, r, img.shape)
+        r = cv2.getRotationMatrix2D((img.shape[0] / 2, img.shape[1] / 2), angle, 1.0)
+        result = cv2.warpAffine(img, r, img.shape)
         return result
     else:
         return img
@@ -81,11 +80,11 @@ def filterImg(img, filtro_magnitud):
 
     # como la fase del filtro es 0 la conversi�n de polar a cartesiano es directa (magnitud->x, fase->y)
     filtro = np.array([filtro_magnitud, np.zeros(filtro_magnitud.shape)]).swapaxes(0, 2).swapaxes(0, 1)
-    imgf = cv.dft(np.float32(img), flags=cv.DFT_COMPLEX_OUTPUT)
+    imgf = cv2.dft(np.float32(img), flags=cv2.DFT_COMPLEX_OUTPUT)
 
-    imgf = cv.mulSpectrums(imgf, np.float32(filtro), cv.DFT_ROWS)
+    imgf = cv2.mulSpectrums(imgf, np.float32(filtro), cv2.DFT_ROWS)
 
-    return cv.idft(imgf, flags=cv.DFT_REAL_OUTPUT | cv.DFT_SCALE)
+    return cv2.idft(imgf, flags=cv2.DFT_REAL_OUTPUT | cv2.DFT_SCALE)
 
 def dist(a, b):
     """distancia Euclidea"""
@@ -110,7 +109,7 @@ def filterGaussian(rows, cols, corte, PA = False):
 def filterIdeal(rows, cols, corte):
     """filtro de magnitud ideal"""
     magnitud = np.zeros((rows, cols))
-    magnitud = cv.circle(magnitud, (cols // 2, rows // 2), int(rows * corte), 1, -1)
+    magnitud = cv2.circle(magnitud, (cols // 2, rows // 2), int(rows * corte), 1, -1)
     # np.fft.ifft2
     return np.fft.ifftshift(magnitud)
 
@@ -160,7 +159,7 @@ def umbral(img,u):
 
 def quantum(img,level):
     M,N,c = img.shape
-    img = cv.cvtColor(img,cv.COLOR_RGB2GRAY)
+    img = cv2.cvtColor(img,cv2.COLOR_RGB2GRAY)
     mask = "0"*(8-level) + "1"*level
     max_value = 0
     for i in range(M):
@@ -193,7 +192,7 @@ def get_intensity_line(image,d,parallel_axis):
         It can be 1 -> Y Axis : Vertical
     """
 
-    # image = cv.cvtColor(image,cv.COLOR_RGB2GRAY)
+    # image = cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
 
     line = []
     if parallel_axis == 0: #Horizontal
@@ -237,7 +236,7 @@ def get_info_bottles(bottles,y_covers):
     """
 
     percent_empty = []
-    bottles = cv.cvtColor(bottles,cv.COLOR_RGB2GRAY)
+    bottles = cv2.cvtColor(bottles,cv2.COLOR_RGB2GRAY)
 
     covers = get_intensity_line(bottles, y_covers, 0)
     centers_of_bottles = gravity_object_1D(covers)
@@ -377,7 +376,7 @@ def media_geometrica(img,m,n):
 def generarImagenPatron():
     M = np.ones((300,300), np.uint8)*10
     M[50:250, 50:250] = np.ones((200,200), np.uint8)*130
-    M = cv.circle(M, (150, 150), 70, 230, -1)
+    M = cv2.circle(M, (150, 150), 70, 230, -1)
     return M
 
 def gr_gaussiano(img,mean, sigma):
@@ -391,34 +390,34 @@ def gr_gaussiano(img,mean, sigma):
 
 def gr_rayleigh(img, a):
     (alto, ancho) = img.shape
-    img_r = cv.normalize(img, 0, 1, norm_type=cv.NORM_MINMAX, dtype=cv.CV_32F)
+    img_r = cv2.normalize(img, 0, 1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
     ruido = np.random.rayleigh(a, [alto, ancho]).astype('f')
     img_r = img_r + ruido
-    img_r = cv.normalize(img_r, 0, 1, norm_type=cv.NORM_MINMAX, dtype=cv.CV_32F)
+    img_r = cv2.normalize(img_r, 0, 1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
     return img_r
 
 def gr_uniforme(img, a, b):
     (alto, ancho) = img.shape
-    img_r = cv.normalize(img, 0, 1, norm_type=cv.NORM_MINMAX, dtype=cv.CV_32F)
+    img_r = cv2.normalize(img, 0, 1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
     ruido = np.random.uniform(a, b, [alto, ancho]).astype('f')
     img_r = img_r + ruido
-    img_r = cv.normalize(img_r, 0, 255, norm_type=cv.NORM_MINMAX, dtype=cv.CV_32F)
+    img_r = cv2.normalize(img_r, 0, 255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
     return img_r
 
 def gr_exponencial(img, a):
     (alto, ancho) = img.shape
-    img_r = cv.normalize(img, 0, 1, norm_type=cv.NORM_MINMAX, dtype=cv.CV_32F)
+    img_r = cv2.normalize(img, 0, 1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
     ruido = np.random.exponential(a, [alto, ancho]).astype('f')
     img_r = img_r + ruido
-    img_r = cv.normalize(img_r, 0, 255, norm_type=cv.NORM_MINMAX, dtype=cv.CV_32F)
+    img_r = cv2.normalize(img_r, 0, 255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
     return img_r
 
 def gr_gamma(img, a, b):
     (alto, ancho) = img.shape
-    img_r = cv.normalize(img, 0, 1, norm_type=cv.NORM_MINMAX, dtype=cv.CV_32F)
+    img_r = cv2.normalize(img, 0, 1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
     ruido = np.random.gamma(a, b, [alto, ancho]).astype('f')
     img_r = img_r + ruido
-    img_r = cv.normalize(img_r, 0, 1, norm_type=cv.NORM_MINMAX, dtype=cv.CV_32F)
+    img_r = cv2.normalize(img_r, 0, 1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
     return img_r
 
 def gr_salPimienta(img, s_vs_p, cantidad):
@@ -527,17 +526,17 @@ def filtro_img(img,filtro_magnitud):
     plt.title('Espectro del filtro')
     plt.imshow(filtro_magnitud,cmap='gray')
 
-    imgf=cv.dft(np.float32(img), flags=cv.DFT_COMPLEX_OUTPUT)
+    imgf=cv2.dft(np.float32(img), flags=cv2.DFT_COMPLEX_OUTPUT)
 
     plt.subplot(222)
     plt.title('Filtro en el dominio espacial')
     plt.imshow(20*np.log(np.abs(imgf[:,:,0])),cmap='gray')
 
-    resultFH =cv.mulSpectrums(imgf, np.float32(filtro), cv.DFT_ROWS)
+    resultFH =cv2.mulSpectrums(imgf, np.float32(filtro), cv2.DFT_ROWS)
     plt.subplot(223)
     plt.title('Multiplicacion')
     plt.imshow(np.log(np.abs(resultFH[:,:,0])),cmap='gray')
-    result_fg = cv.idft(resultFH, flags=cv.DFT_REAL_OUTPUT | cv.DFT_SCALE)
+    result_fg = cv2.idft(resultFH, flags=cv2.DFT_REAL_OUTPUT | cv2.DFT_SCALE)
     plt.subplot(224)
     plt.title('Resultado del producto')
     plt.imshow(np.abs(result_fg),cmap='gray')

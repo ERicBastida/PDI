@@ -1,15 +1,18 @@
+
+# encoding: utf-8
+
 # TRABAJO PRACTICO Nro 8 - Morfologia Binaria
 # Docs OpenCV
 # --------------------------
 # https://docs.opencv.org/trunk/d9/d61/tutorial_py_morphological_ops.html
-import cv2 as opencv
+import cv2 
 import numpy as np
-from  pdifunFixed import *
+import pdifunFixed as pdi
 from matplotlib import pyplot as plt
 import matplotlib.ticker as plticker
 
 class Morfologia :
-    PATH = "img/Morfologia/"
+    # PATH = "img/Morfologia/"
 
     # It was created one time, becouse is needed to create and image
 
@@ -94,6 +97,8 @@ class Morfologia :
     SEs = [E1,E2,E3,E4,E5,E6]
     nameSES = ["E1","E2","E3","E4","E5","E6"]
 
+    __basePath = "img/TP8 - Morfologia/"
+
     def ejercicio1(self, inciso=0):
         """
                    Ejercicio 1 
@@ -102,17 +107,17 @@ class Morfologia :
         
         """
         
-        img = cv2.imread("img/morfologia_ej1.jpg", 0)
+        img =cv2.imread(self.__basePath+"morfologia_ej1.jpg", 0)
+        img = np.uint8(img)
 
         for ielement in range( len(self.SEs)):
 
-            kernel = self.SEs[ielement]
-            try:
-                img_erosion = cv2.erode(img, kernel, iterations=1)
-                img_dilation = cv2.dilate(img, kernel, iterations=1)
-            except:
-                print "Error with "+ self.nameSES[ielement]
-                continue
+            kernel = np.uint8( self.SEs[ielement])
+
+
+            img_erosion = cv2.erode(img, kernel, iterations=1)
+            img_dilation = cv2.dilate(img, kernel, iterations=1)
+
 
             plt.figure(self.nameSES[ielement])
 
@@ -141,7 +146,11 @@ class Morfologia :
         plt.show()
 
     def ejercicio2(self):
-        img = cv2.imread(self.PATH+"matrix_ej2.jpg", 0)
+
+        # img = cv2.imread(self.__basePath+"matrix_ej2.jpg", 0)
+        img = self.MATRIXE2
+        img = np.uint8(img)
+        
         plt.subplot(131),plt.imshow(img,cmap="gray"),plt.title("Imagen original")
         plt.subplot(132),plt.imshow(opencv.morphologyEx(img,cv.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_RECT,(3,3)))  ,cmap="gray"),plt.title("Apertura")
         plt.subplot(133),plt.imshow(opencv.morphologyEx(img,cv.MORPH_CLOSE,self.E1),cmap="gray"),plt.title("Cerradura")
@@ -151,7 +160,7 @@ class Morfologia :
         # Kernel 
         kernel = opencv.getStructuringElement(opencv.MORPH_RECT,(2,2) )
         # Get original image
-        img = opencv.imread(self.PATH+"Tarjeta.jpeg",0)
+        img = opencv.imread(self.__basePath +"Tarjeta.jpeg",0)
         # Threshold image
         retval, threshold = cv2.threshold(img, 130, 255, cv2.THRESH_BINARY)
         # Inverting colors
@@ -232,9 +241,9 @@ class Morfologia :
         y = 31
         # Kernel 
         kernel = opencv.getStructuringElement(opencv.MORPH_RECT,(2,2) )
-
-        img = opencv.imread(self.PATH+"Caracteres.jpeg",0)
-
+        pathFile = self.__basePath + "Caracteres.jpeg"
+        img = opencv.imread(pathFile,0)
+        
 
         retval, thresholdORG = cv2.threshold(img, 130, 255, cv2.THRESH_BINARY)
         threshold = self.invertColor(thresholdORG)
@@ -261,10 +270,10 @@ class Morfologia :
     def ejercicio3_3(self):
         # Kernel 
         kernel = opencv.getStructuringElement(opencv.MORPH_ELLIPSE,(5,5) )
-        masKernel = opencv.getStructuringElement(opencv.MORPH_ELLIPSE,(10,10) )
+        masKernel = opencv.getStructuringElement(opencv.MORPH_ELLIPSE,(10,10))
         
 
-        img = opencv.imread(self.PATH+"estrellas.jpg",0)
+        img = opencv.imread(self.__basePath+"estrellas.jpg",0)
         plt.figure("Orig")
         retval, threshold = cv2.threshold(img,200,255,cv2.THRESH_BINARY)
         result = cv2.erode(threshold,kernel)
@@ -279,14 +288,18 @@ class Morfologia :
         plt.show()
 
     def ejercicio3_4(self):
+
         size = 5
-        kernel = opencv.getStructuringElement(opencv.MORPH_ELLIPSE,(2,2) )
+        
         kernelDetectionStar = np.zeros((size,size),np.uint8)
+        # Genero un kernel donde su diagonal contiene todos unos
+        # es decir, obtengo un detector de lineas en 45° (en realidad de -45°)
         for i in range(size):
             kernelDetectionStar[i,i]=1
+        # Lo roto para obtenerlo a 45
         kernelDetectionStar = np.rot90(kernelDetectionStar,1)
         
-        img = opencv.imread(self.PATH+"lluviaEstrellas.jpg",0)
+        img = opencv.imread(self.__basePath+"lluviaEstrellas.jpg",0)
         plt.figure("Orig")        
         plt.imshow(img,cmap="gray"), plt.title("Original")
 
@@ -294,9 +307,12 @@ class Morfologia :
         seed = cv2.erode(threshold,kernelDetectionStar)
         
         result = self.extractionConnectedComponnet(seed,threshold)
+
+        kernel = opencv.getStructuringElement(opencv.MORPH_ELLIPSE,(2,2) )
         result = cv2.dilate(result,kernel,iterations=8)
-        # result = cv2.dilate(result,kernel,iterations=15)
+        
         result = cv2.bitwise_and(img,result)
+
         plt.figure("Algoritmeada")
         plt.subplot(131) , plt.imshow(seed,cmap="gray"), plt.title("Seed")
         plt.subplot(132) , plt.imshow(threshold,cmap="gray"), plt.title("Threshold")
@@ -307,7 +323,7 @@ class Morfologia :
     def frame(self, image,frame_width):
         try:
             rows,cols ,_ = image.shape
-            frame_width = 2
+            
 
             I = np.zeros((rows,cols),np.uint8)
 
@@ -374,9 +390,10 @@ class Morfologia :
                     if (A[i,j] and not(B[i,j])):
                         result[i,j]=1
             return result
+    
     def borderClearing(self,image,mask):
 
-        I = self.frame(image,1)
+        I = self.frame(image,10)
 
 
         
@@ -389,17 +406,20 @@ class Morfologia :
 
         return result
 
+
+
     def ejercicio3_5(self):
-        img = opencv.imread(self.PATH+"Globulos Rojos.jpg")
+        img = opencv.imread(self.__basePath+"Globulos Rojos.jpg")
         img = cv2.cvtColor(img,opencv.COLOR_BGR2HSV)
 
-
+        G = segmentador(img,[0,150,50],[10,255,255])
      
-        # define range of red color in HSV
-        lower_color = np.array([0,150,50])
-        upper_color = np.array([10,255,255])
-        # Threshold the HSV image to get only blue colors
-        G = cv2.inRange(img, lower_color, upper_color)
+
+        plt.figure()
+        
+        plt.imshow(G,cmap='gray'),plt.title("Segmentada")
+        plt.show()
+
         result = self.borderClearing(img,G)
 
         # --------------Graphics--------------
@@ -411,7 +431,34 @@ class Morfologia :
         plt.subplot(122) , plt.imshow(result,cmap="gray"), plt.title("Border Clearing")
 
         plt.show()
+    
+    def ejercicio3_6(self):
+        
+        img = cv2.imread(self.__basePath+"Rio.jpeg")
+        imgHSV = cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
+        imgRGB = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
 
+        # infoROI(imgHSV)
+
+        mask_lago = segmentador(imgHSV,
+                            [109, 228, 190],
+                            [114, 255, 235]
+                            )
+        mask_rios = segmentador(imgHSV,
+                            [70, 45, 118],
+                            [100, 90, 255]
+                                    )
+        mask = cv2.bitwise_or(mask_lago,mask_rios)             
+        result = masking(imgHSV,mask)        
+        result = cv2.cvtColor(result,cv2.COLOR_HSV2RGB)              
+        # mask = cv2.morphologyEx(mask,cv2.MORPH_ERODE,(10,10))
+
+        plt.figure("Previsualizacion ")
+        plt.subplot(121)
+        plt.imshow(imgRGB)
+        plt.subplot(122)
+        plt.imshow(result,cmap="gray")
+        plt.show()
 
     def normalize(self,img,threshold = 255):
         copyresult = img
@@ -424,7 +471,8 @@ class Morfologia :
 
     def convexHull(self,img):
         
-        im2, contours, hierarchy = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        # im2, contours, hierarchy = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
 
         # create hull array for convex hull points
@@ -449,26 +497,23 @@ class Morfologia :
         
         return drawing , cv2.fillPoly(drawing, pts =hull, color=(255,255,255))
 
-
-
     def ejercicio3_7(self):
-        img = opencv.imread(self.PATH+"Melanoma.jpg")
-        img = cv2.cvtColor(img,opencv.COLOR_BGR2HSV)
+        img = cv2.imread(self.__basePath+"Melanoma.jpg")
+        img = cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
 
+        mask = segmentador(img,[0,150,50],[50,255,255])
+        mask = cv2.morphologyEx(mask,cv2.MORPH_CLOSE,cv2.getStructuringElement(cv2.MORPH_RECT,(15,15)))
 
-     
-        # define range of red color in HSV
-        lower_color = np.array([0,150,50])
-        upper_color = np.array([50,255,255])
-        # Threshold the HSV image to get only blue colors
-        mask = cv2.inRange(img, lower_color, upper_color)
-        mask = opencv.morphologyEx(mask,opencv.MORPH_CLOSE,opencv.getStructuringElement(opencv.MORPH_RECT,(15,15)))
-        convexHull_contours, shape = self.convexHull(np.copy(mask))
+        contornosDibujados, shape = self.convexHull(np.copy(mask))
+
+        plt.figure()
+        plt.imshow(contornosDibujados)
+        plt.show()
         
             
         # --------------Graphics--------------
         plt.figure("Original")
-        plt.subplot(111) , plt.imshow(cv2.cvtColor(img,opencv.COLOR_HSV2RGB),cmap="hsv"), plt.title("The original")
+        plt.subplot(111) , plt.imshow(cv2.cvtColor(img,cv2.COLOR_HSV2RGB),cmap="hsv"), plt.title("The original")
 
         plt.figure("Algoritmeada")
         plt.subplot(121) , plt.imshow(mask,cmap="gray"), plt.title("Mask")
@@ -503,9 +548,9 @@ class Morfologia :
 
             # --- Interactive graphics
             plt.figure(0)
-            plt.subplot(131),plt.imshow(eroded,cmap="gray"),plt.title("Eroded")
-            plt.subplot(132),plt.imshow(eroded_opening,cmap="gray"),plt.title("Eroded and Opening")
-            plt.subplot(133),plt.imshow(Sk,cmap="gray"),plt.title("Skeleton k ")
+            plt.subplot(311),plt.imshow(eroded,cmap="gray"),plt.title("Eroded")
+            plt.subplot(312),plt.imshow(eroded_opening,cmap="gray"),plt.title("Eroded and Opening")
+            plt.subplot(313),plt.imshow(Sk,cmap="gray"),plt.title("Skeleton k ")
             plt.figure(5)
             plt.subplot(111),plt.imshow(skeleton,cmap="gray"),plt.title("Skeleton k = "  + str(k))
             
@@ -523,17 +568,17 @@ class Morfologia :
         return skeleton
 
     def ejercicio3_8(self):
-        import time
-        image = opencv.imread(self.PATH+"Cuerpos.jpg",0)
+        # import time
+        image = cv2.imread(self.__basePath+"Cuerpos.jpg",0)
         img = np.copy(image)
 
         size = np.size(img)
         skel = np.zeros(img.shape,np.uint8)
         
-        ret,img = cv2.threshold(img,240,255,opencv.THRESH_BINARY_INV)
+        ret,img = cv2.threshold(img,240,255,cv2.THRESH_BINARY_INV)
         kSize = 7
         element = cv2.getStructuringElement(cv2.MORPH_RECT,(kSize,kSize))
-        img = opencv.morphologyEx(img,opencv.MORPH_OPEN,element)
+        img = cv2.morphologyEx(img,cv2.MORPH_OPEN,element)
         skel = self.skeleton(img)
         
 
@@ -541,7 +586,63 @@ class Morfologia :
         # plt.subplot(121) , plt.imshow(img,cmap="gray"), plt.title("Original")
         # plt.subplot(122) , plt.imshow(skel,cmap="gray"), plt.title("Skeleton")
 
-        # plt.show()
+        plt.show()
+
+def masking(img,mask):
+
+    nMask = cv2.normalize(mask, 0, 1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+    C1,C2,C3 = cv2.split(img)
+
+    NC1 = cv2.multiply(nMask,C1)
+    NC2 = cv2.multiply(nMask,C2)
+    NC3 = cv2.multiply(nMask,C3)
+
+    newImg = cv2.merge((NC1,NC2,NC3))
+
+    return newImg
+    
+def infoROI(img):
+
+
+    # Select ROI
+    r = cv2.selectROI(img)
+    # Crop image
+    imCrop = img[int(r[1]):int(r[1]+r[3]), int(r[0]):int(r[0]+r[2])]
+    
+    M,N,C = img.shape
+
+    fig, axs = plt.subplots(int(C),1)
+    
+    for c in range(C):
+        histC = pdi.histograma(imCrop[:,:,c])
+        axs[int(c)].stem(range(len(histC)),histC,markerfmt=" ")
+        axs[int(c)].set_title("Channel "+ str(c))
+        
+    plt.show()
+
+
+def segmentador(img,lowerColor,upperColor):
+    """
+    img: La imagen debe estar formateada en el MODELO en especifico
+    lowerColor: Valor mínimo en el MODELO [Min1,Min2,Min3]
+    upperColor: Valor máximo en el MODELO [Max1,Max2,Max3]
+        
+    """
+    try:
+        # define range of red color in HSV
+        lower_color = np.array(lowerColor )
+        upper_color = np.array(upperColor)
+
+        # Threshold the HSV image to get only blue colors
+        G = cv2.inRange(img, lower_color, upper_color)
+
+    except e:
+        print "Ha ocurrido un error en el segmentador: \n" 
+        return e
+
+    return G
+
+
 morfologia = Morfologia()
 
 # morfologia.ejercicio1()
@@ -551,7 +652,7 @@ morfologia = Morfologia()
 # morfologia.ejercicio3_3()
 # morfologia.ejercicio3_4()
 # morfologia.ejercicio3_5()
-# morfologia.ejercicio3_6() #No implemented, 'cause segmentation is needed
+# morfologia.ejercicio3_6() 
 # morfologia.ejercicio3_7() 
 morfologia.ejercicio3_8() 
 
@@ -596,3 +697,33 @@ morfologia.ejercicio3_8()
 #     plt.draw()
 #     plt.pause(0.0001)
 #     plt.clf()
+
+# ----------------------FIN DOC-------------------------
+
+
+# def onclick(event):
+#     global ix, iy
+#     ix, iy = event.xdata, event.ydata
+#     print 'x = %d, y = %d'%(
+#         ix, iy)
+
+#     global coords
+#     coords.append((ix, iy))
+
+#     if len(coords) == 2:
+#         fig.canvas.mpl_disconnect(cid)
+
+#     return coords
+
+# img = cv2.imread("img/billete.jpg",0)
+# fig = plt.figure()
+
+# print "Holis"
+
+# plt.imshow(img)
+# plt.show()
+
+
+# coords = []
+
+# cid = fig.canvas.mpl_connect('button_press_event', onclick)
