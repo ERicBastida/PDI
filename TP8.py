@@ -601,46 +601,8 @@ def masking(img,mask):
 
     return newImg
     
-def infoROI(img):
 
 
-    # Select ROI
-    r = cv2.selectROI(img)
-    # Crop image
-    imCrop = img[int(r[1]):int(r[1]+r[3]), int(r[0]):int(r[0]+r[2])]
-    
-    M,N,C = img.shape
-
-    fig, axs = plt.subplots(int(C),1)
-    
-    for c in range(C):
-        histC = pdi.histograma(imCrop[:,:,c])
-        axs[int(c)].stem(range(len(histC)),histC,markerfmt=" ")
-        axs[int(c)].set_title("Channel "+ str(c))
-        
-    plt.show()
-
-
-def segmentador(img,lowerColor,upperColor):
-    """
-    img: La imagen debe estar formateada en el MODELO en especifico
-    lowerColor: Valor mínimo en el MODELO [Min1,Min2,Min3]
-    upperColor: Valor máximo en el MODELO [Max1,Max2,Max3]
-        
-    """
-    try:
-        # define range of red color in HSV
-        lower_color = np.array(lowerColor )
-        upper_color = np.array(upperColor)
-
-        # Threshold the HSV image to get only blue colors
-        G = cv2.inRange(img, lower_color, upper_color)
-
-    except e:
-        print "Ha ocurrido un error en el segmentador: \n" 
-        return e
-
-    return G
 
 
 morfologia = Morfologia()
