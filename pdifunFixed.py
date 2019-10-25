@@ -8,6 +8,69 @@ import numpy as np
 import math
 from scipy import ndimage
 
+class imgObject:
+
+    indx = -1
+    Pcenter = None
+    area = None
+    detectorRect = (0,0,0,0)
+    moments = None
+    contourn = None
+
+
+    def __init__(self,contour,indx):
+        self.contourn = contour 
+        self.indx = indx
+    
+    def obtenerArea(self):
+
+        if (self.area == None):
+            self.area = cv2.contourArea(self.contourn)
+
+        return self.area
+
+
+        
+    def obtenerRectDetector(self):
+
+        if (self.detectorRect == None):
+            self.detectorRect = cv2.boundingRect(self.contourn)
+
+        return self.detectorRect
+
+    def obtenerCentroObjeto(self):
+        
+        if (self.moments  == None):
+            self.moments = cv2.moments(self.contourn)
+            m = self.moments
+            self.Pcenter = ( int(m['m10'] /m['m00'] ) , int(m['m01'] /m['m00']) )
+        
+        return self.Pcenter
+
+    def dibujate(self,img):
+        cv2.drawContours(img, [self.contourn], -1, (0,255,255), 1, 8)
+        return img
+        
+
+
+def gestionarObjetos(mask):
+
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL , cv2.CHAIN_APPROX_SIMPLE)
+    listObjects = []
+
+    for i in range(len(contours)):
+        
+        newObject = imgObject(contours[i],i)
+        listObjects.append(newObject)
+
+    return listObjects
+
+def pasteImg(baseImage,x_offset , y_offset, image):
+    "Pega una imagen (image) sobre una imagen base (baseImage) segun el offset que se ingrese"
+
+    baseImage[y_offset:y_offset+image.shape[0], x_offset:x_offset+image.shape[1]] = image
+
+    return baseImage
 
 def infoROI(img):
 

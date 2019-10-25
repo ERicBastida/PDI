@@ -6,84 +6,49 @@ import cv2
 from matplotlib import pyplot as plt
 
 
-class imgObject:
-
-    indx = -1
-    Pcenter = None
-    area = None
-    detectorRect = (0,0,0,0)
-    moments = None
-    contourn = None
-
-
-    def __init__(self,contour,indx):
-        self.contourn = contour 
-        self.indx = indx
-    
-    def obtenerArea(self):
-
-        if (self.area == None):
-            self.area = cv2.contourArea(self.contour)
-
-        return self.area
-
-
-        
-    def obtenerRectDetector(self):
-
-        if (self.detectorRect == None):
-            self.detectorRect = cv2.boundingRect(self.contourn)
-
-        return self.detectorRect
-
-    def obtenerCentroObjeto(self):
-        
-        if (self.moments  != None):
-            self.moments = cv2.moments(self.contour)
-            m = self.moments
-            self.Pcenter = ( int(m['m10'] /m['m00'] ) , int(m['m01'] /m['m00']) )
-        
-        return self.Pcenter
-        
-
-
-
-
-
-
-def gestionarObjetos(mask):
-
-    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL , cv2.CHAIN_APPROX_SIMPLE)
-    listObjects = []
-
-    for i in range(len(contours)):
-        
-        newObject = imgObject(contours[i],i)
-        listObjects.append(newObject)
-
-    return listObjects
-
-
-
-
 basePath = sys.path[0]
 
 img = cv2.imread(basePath+'/EXAMEN09.jpg')
-img = cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
+imgRGB = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+imgHSV = cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
 # pdi.infoROI(img)
 
-manzanas_rojas_mask = pdi.segmentador(img,[173,125,127],[180,240,211])
+manzanas_rojas_mask = pdi.segmentador(imgHSV,[173,125,127],[180,240,211])
+manzanas_verdes_mask = pdi.segmentador(imgHSV,[39,150,124],[44,237,172])
 
 
-manzanas = gestionarObjetos(manzanas_rojas_mask)
+manzanas_rojas = pdi.gestionarObjetos(manzanas_rojas_mask)
+manzanas_verdes = pdi.gestionarObjetos(manzanas_verdes_mask)
 
-print len(manzanas)
+print len(manzanas_rojas), " manzanas rojas."
+print len(manzanas_verdes), " manzanas verdes."
+
+areaVerdes = []
+areaRojas = []
+
+for indx in range(len(manzanas_verdes)):
+    areaVerdes.append(manzanas_verdes[indx].obtenerArea())
+    cv2.putText(imgRGB,"V: "+ str(indx), manzanas_verdes[indx].obtenerCentroObjeto(), cv2.FONT_HERSHEY_SIMPLEX, 0.5, 255)
+
+for indx in range(len(manzanas_rojas)):
+    areaRojas.append(manzanas_rojas[indx].obtenerArea())
+    cv2.putText(imgRGB,"R: "+str(indx), manzanas_rojas[indx].obtenerCentroObjeto(), cv2.FONT_HERSHEY_SIMPLEX, 0.5, 255)
+
+indxRoja = areaRojas.index(min(areaRojas))
+indxVerde = areaVerdes.index(min(areaVerdes))
+imgRGB = manzanas_verdes[indxVerde].dibujate(imgRGB)
+imgRGB = manzanas_rojas[indxRoja].dibujate(imgRGB)
+
+print "La manzana roja numero" , indxRoja, " es la mas chica"
+print "La manzana verde numero" , indxVerde, " es la mas chica"
 
 
-plt.imshow(manzanas_rojas_mask,cmap='gray'),plt.show()
 
-# manzanas_verdes = pdi.segmentador(img,[40,172,127],[44,244,170])
-# plt.imshow(manzanas_verdes,cmap='gray'),plt.show()
+plt.imshow(imgRGB)
+
+plt.show()
+
+
 
 
 
