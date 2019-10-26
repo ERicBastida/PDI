@@ -43,7 +43,10 @@ class imgObject:
         if (self.moments  == None):
             self.moments = cv2.moments(self.contourn)
             m = self.moments
-            self.Pcenter = ( int(m['m10'] /m['m00'] ) , int(m['m01'] /m['m00']) )
+            if m['m00'] == 0:
+                print "No se pudo obtener el centro de un objeto"    
+            else:
+                self.Pcenter = ( int(m['m10'] /m['m00'] ) , int(m['m01'] /m['m00']) )
         
         return self.Pcenter
 
@@ -1185,7 +1188,7 @@ def invertColor(self, img):
             copyImage[i,j] = -img[i,j]+255
     
     return copyImage
-    
+
 def pegar(imgA,mask,imgB):
     """
     Recibe dos imagenes A y B con sus respectivos 3 canales
@@ -1228,3 +1231,35 @@ def pegar(imgA,mask,imgB):
     result = cv2.merge((E1,E2,E3))
 
     return result
+def autoSegmentador(img,infoCanales,umbrales):
+   
+    M,N = img.shape[:2]
+    total = M*N
+
+    U1 = umbrales[0]*total
+    U2 = umbrales[1]*total
+    U3 = umbrales[2]*total
+
+    umbralCanalesMinimos = []
+    umbralCanalesMaximos = []
+
+    tC1  = []
+    tC2  = []
+    tC3  = []
+
+    nIntensities = len(infoCanales[0])
+    
+    for i in range(nIntensities):
+        if infoCanales[0][i][0] > U1:
+            tC1.append(i)
+        if infoCanales[1][i][0] > U2:
+            tC2.append(i)
+        if infoCanales[2][i][0] > U3:
+            tC3.append(i)
+
+    umbralCanalesMinimos= [tC1[0],tC2[0],tC3[0]]
+    umbralCanalesMaximos= [tC1[-1],tC2[-1],tC3[-1]]
+
+    mask = segmentador(img,umbralCanalesMinimos,umbralCanalesMaximos)
+
+    return mask
