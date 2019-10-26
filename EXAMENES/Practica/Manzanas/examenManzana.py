@@ -4,9 +4,9 @@ sys.path.insert(1, sys.path[0]+'../../../../')
 import pdifunFixed as pdi
 import cv2
 from matplotlib import pyplot as plt
-
-
 basePath = sys.path[0]
+
+
 
 img = cv2.imread(basePath+'/EXAMEN09.jpg')
 imgRGB = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)

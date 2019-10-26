@@ -67,29 +67,37 @@ def gestionarObjetos(mask):
 
 def pasteImg(baseImage,x_offset , y_offset, image):
     "Pega una imagen (image) sobre una imagen base (baseImage) segun el offset que se ingrese"
-
+    x_offset = int(x_offset)
+    y_offset = int(y_offset)
     baseImage[y_offset:y_offset+image.shape[0], x_offset:x_offset+image.shape[1]] = image
 
     return baseImage
 
-def infoROI(img):
-
-
-    # Select ROI
-    r = cv2.selectROI(img)
-    # Crop image
-    imCrop = img[int(r[1]):int(r[1]+r[3]), int(r[0]):int(r[0]+r[2])]
+def infoROI(img,show=True,all=False):
+    
+    image = img.copy()
+    
+    if all == False:
+        # Select ROI
+        r = cv2.selectROI(img)
+        # Crop image
+        image = img[int(r[1]):int(r[1]+r[3]), int(r[0]):int(r[0]+r[2])]
     
     _,_,C = img.shape
 
-    fig, axs = plt.subplots(int(C),1)
-    
+    _, axs = plt.subplots(int(C),1)
+    histograms = []
     for c in range(C):
-        histC = histograma(imCrop[:,:,c])
+        
+        histC = histograma(image[:,:,c])
         axs[int(c)].stem(range(len(histC)),histC,markerfmt=" ")
         axs[int(c)].set_title("Channel "+ str(c))
-        
-    plt.show()
+        histograms.append(histC)
+    if show:
+        plt.show()
+
+    return histograms 
+
     
 def segmentador(img,lowerColor,upperColor):
     """
@@ -731,6 +739,10 @@ def motion_blur(size, a,  b):
 
     return np.fft.fftshift(transformation)
 
+
+
+
+
 #--------------------- SEGMENTACION | CAPITULO 10  | TP 7 ---------------------
 
 def deteccionPuntos(img):
@@ -887,7 +899,7 @@ def hough_Transform(img,threshold,thita_i = None,thita_f = None):
     -------------------------------------------------------------------------------------------------------
     Tener en mente que :
         thita = [0 , 2 pi] y rho > 0 | hasta D , donde D es la distancia diagonal de la imagen (en pixeles)
-        Y thita crece desde el eje y
+        Y thita crece desde el eje x
     
     """
     # Color de las lineas RGB
@@ -951,3 +963,268 @@ def hough_Transform(img,threshold,thita_i = None,thita_f = None):
         print "No se han encontrado lineas segun los parametros especificados."
 
     return imgWithLines, linesP
+
+
+
+def skeleton(self,img):
+            
+    kSize = 3
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT,(kSize,kSize))
+    size = np.size(img)
+    skeleton = np.zeros(img.shape,np.uint8)
+    
+    
+    
+    done = False
+
+    k = 0
+    plt.ion()
+    while( not done):
+        # First term (A (-) B)
+        eroded = cv2.erode(img,kernel)
+        # Second term (A (-) B ) o B
+        eroded_opening = cv2.morphologyEx(eroded,cv2.MORPH_OPEN,kernel)
+        # temp = cv2.dilate(eroded,kernel) 
+        # Skeleton of iteration k -> Sk(A)
+        # (A (-) B) - (A (-) B ) o B
+        Sk = cv2.subtract(eroded,eroded_opening)
+        # S(A) = U Sk(A)
+        skeleton = cv2.bitwise_or(skeleton,Sk)
+
+        # --- Interactive graphics
+        plt.figure(0)
+        plt.subplot(311),plt.imshow(eroded,cmap="gray"),plt.title("Eroded")
+        plt.subplot(312),plt.imshow(eroded_opening,cmap="gray"),plt.title("Eroded and Opening")
+        plt.subplot(313),plt.imshow(Sk,cmap="gray"),plt.title("Skeleton k ")
+        plt.figure(5)
+        plt.subplot(111),plt.imshow(skeleton,cmap="gray"),plt.title("Skeleton k = "  + str(k))
+        
+        plt.pause(3)
+        plt.clf()
+
+        img = eroded.copy()
+                
+        zeros = size - cv2.countNonZero(eroded)
+        if zeros==size:
+            done = True
+        k +=1
+        
+            
+    return skeleton
+
+def convexHull(self,img):
+        
+    contours, _ = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    # im2, contours, hierarchy = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+
+    # create hull array for convex hull points
+    hull = []
+
+    # calculate points for each contour
+    for i in range(len(contours)):
+        # creating convex hull object for each contour
+        hull.append(cv2.convexHull(contours[i], False))
+
+    # create an empty black image
+    drawing = np.zeros((img.shape[0], img.shape[1], 3), np.uint8)
+    
+    # draw contours and hull points
+    for i in range(len(contours)):
+        color_contours = (0, 255, 0) # green - color for contours
+        color = (255, 0, 0) # blue - color for convex hull
+        # draw ith contour
+        # cv2.drawContours(drawing, contours, i, color_contours, 1, 8, hierarchy)
+        # draw ith convex hull object
+        cv2.drawContours(drawing, hull, i, color, 1, 8)
+    
+    return drawing , cv2.fillPoly(drawing, pts =hull, color=(255,255,255))
+
+def masking(img,mask):
+
+    nMask = cv2.normalize(mask, 0, 1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+    C1,C2,C3 = cv2.split(img)
+
+    NC1 = cv2.multiply(nMask,C1)
+    NC2 = cv2.multiply(nMask,C2)
+    NC3 = cv2.multiply(nMask,C3)
+
+    newImg = cv2.merge((NC1,NC2,NC3))
+
+    return newImg
+
+
+def borderClearing(self,image,mask):
+
+    I = self.frame(image,10)
+
+
+    
+    se = cv2.getStructuringElement(cv2.MORPH_RECT,(3,3))
+    
+    Reconstruction_by_dilation = self.morphologicalReconstructionbyDilation(I,mask,se,40)
+    
+    
+    result = self.difference(mask,Reconstruction_by_dilation)
+
+    return result
+
+def difference(self,A,B):
+    if (A.shape == B.shape):
+        
+        rows, cols= A.shape
+        result = np.zeros((rows,cols),np.uint8)
+        for  i in range(rows):
+            for j in range(cols):
+                if (A[i,j] and not(B[i,j])):
+                    result[i,j]=1
+        return result
+
+def morphologicalReconstructionbyErotion(self,F,G,se,k):
+    if (k == 0):
+        return F
+    if (k == 1):
+        erotion_F_and_SE = opencv.erotion(F,se) 
+        RD1 =   opencv.bitwise_or( erotion_F_and_SE, G)
+        return RD1
+    
+    RDk_1 =  self.morphologicalReconstructionbyErotion(F,G,se,k-1)
+    erotion_RDK1_and_SE = opencv.erotion(RDk_1,se) 
+    RDk =   opencv.bitwise_or( erotion_RDK1_and_SE, G)
+    if (np.array_equal(RDk,RDk_1)):
+        
+        print "MR by Erotion finished with ", k , " iterations."
+        
+        
+        return RDk
+
+    else:
+        return RDk
+
+def morphologicalReconstructionbyDilation(self,F,G,se,k):
+    if (k == 0):
+        return F
+    if (k == 1):
+        dilation_F_and_SE = opencv.dilate(F,se) 
+        R_D_1 =   opencv.bitwise_and( dilation_F_and_SE, G)
+        return R_D_1
+    
+    RDk_1 =  self.morphologicalReconstructionbyDilation(F,G,se,k-1)
+    dilation_RDK1_and_SE = opencv.dilate(RDk_1,se) 
+    RDk =   opencv.bitwise_and( dilation_RDK1_and_SE, G)
+    if (np.array_equal(RDk,RDk_1)):
+        
+        print "MR by Dilation finished with ", k , " iterations."
+        
+        
+        return RDk
+
+    else:
+        return RDk
+
+def frame(self, image,frame_width):
+    try:
+        rows,cols ,_ = image.shape
+        
+
+        I = np.zeros((rows,cols),np.uint8)
+
+        I[1:1+frame_width,:] = np.ones((frame_width,cols),np.uint8)
+        I[rows-frame_width:rows ,:] = np.ones((frame_width,cols),np.uint8)
+
+
+        I[:,1:1+frame_width] = np.ones((rows,frame_width),np.uint8)
+        I[:  ,cols-frame_width:cols] = np.ones((rows,frame_width),np.uint8)
+
+        return I
+    except:
+        print "Error in frame [function]"
+
+def extractionConnectedComponnet(self, seed , mask, SE=[]):
+    """
+    Extraction of connected components
+    **********************************
+    seed: Matrix (NxM) that contains almost a pixel in the component
+    mask: Matrix (NxM) that contains the original figure, and is the mask when aplicating growing (dilation)
+    SE: 
+    X_k = [X_(k-1) (+) B] \interseccion 
+
+    """
+
+    kernel = SE
+    if (kernel == []):
+        kernel = opencv.getStructuringElement(opencv.MORPH_RECT,(3,3))
+    X_k_1 = seed
+    
+    result = opencv.dilate(X_k_1,kernel)
+    X_k = opencv.bitwise_and(result,mask)
+    k_max = 1000
+    k = 0
+    
+    while(not(np.array_equal(X_k,X_k_1)) and k < k_max):
+        X_k_1 = X_k
+        k+=1
+        result = opencv.dilate(X_k_1,kernel)
+        X_k = opencv.bitwise_and(result,mask)
+    print "extractionConnectedComponnet: INFO - Return with " + str(k)+ " iterations."
+    return X_k
+
+def toBinary(self, A ,threshold=127):
+    # A = np.asarray(A,dtype=np.int)
+    # return opencv.threshold(A,thresh=threshold, maxval=1)
+    # retval, threshold = cv2.threshold(A, 127, 255, cv2.THRESH_BINARY)
+    # retval, threshold = opencv.threshold(A,threshold,  255, opencv.THRESH_BINARY)
+    print threshold
+
+def invertColor(self, img):
+    rows,cols = img.shape
+    copyImage = img
+    # print img.shape
+    for i in range(rows):
+        for j in range(cols):
+            copyImage[i,j] = -img[i,j]+255
+    
+    return copyImage
+    
+def pegar(imgA,mask,imgB):
+    """
+    Recibe dos imagenes A y B con sus respectivos 3 canales
+      además de una mascara que sera la que va a recortar 
+        la imagen B y la va a pegar sobre la imagen A
+    
+    """
+    # Separo las imagenes en sus respectivos canales
+    A1,A2,A3 = cv2.split(imgA)    
+    B1,B2,B3 = cv2.split(imgB)
+
+
+    # Normalizo los canales para realizar la multiplicacion
+    A1 = np.uint8(A1)
+    A2 = np.uint8(A2)
+    A3 = np.uint8(A3)
+    mask = np.uint8(mask)
+    B1 = np.uint8(B1)
+    B2 = np.uint8(B2)
+    B3 = np.uint8(B3)
+
+    mask = cv2.normalize(mask, 0, 1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+
+    C1 = cv2.multiply(mask,B1)
+    C2 = cv2.multiply(mask,B2)
+    C3 = cv2.multiply(mask,B3)
+    
+    
+    mask_inv = cv2.bitwise_not(mask)
+    mask_inv = cv2.normalize(mask_inv, 0, 1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+
+    D1 = cv2.multiply(mask_inv,A1)
+    D2 = cv2.multiply(mask_inv,A2)
+    D3 = cv2.multiply(mask_inv,A3)
+
+    E1 = C1 + D1
+    E2 = C2 + D2
+    E3 = C3 + D3
+
+    result = cv2.merge((E1,E2,E3))
+
+    return result
