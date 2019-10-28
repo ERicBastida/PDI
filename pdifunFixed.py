@@ -1263,3 +1263,69 @@ def autoSegmentador(img,infoCanales,umbrales):
     mask = segmentador(img,umbralCanalesMinimos,umbralCanalesMaximos)
 
     return mask
+
+def adaptiveMedianFilter():
+    pass
+def stadistics(img):
+
+    mean = np.mean(img)
+    variance = np.var(img)
+    
+    return mean, variance
+
+def ALNRFilter(kernel,gVariance=50.0):
+    "Adaptive, Local Noise Reduction Filter"
+    mL, oL = stadistics(kernel)
+
+    M,N = kernel.shape[:2]
+    gxy = kernel[int(0.5*M),int(0.5*N)]
+    constVar = gVariance/oL
+    fxy = gxy - constVar*(gxy-mL)
+    
+    return fxy
+
+def midpointFilter(kernel):
+    nMin = np.min(kernel)
+    nMax = np.max(kernel)
+
+    midpoint =0.5*(nMax+nMin)
+
+    return midpoint
+
+def alphaTrimmedFilter(kernel,d=2):
+    sortedList= np.sort(kernel.ravel())
+    
+    return np.mean(sortedList[d:-d])
+    def media_no_lineal(self,img,ksize,func):
+        """
+        img: Source
+        ksize: Odd number
+        func: np.median , max , min
+        """
+        
+        
+        k = ksize//2
+        
+        result = np.zeros(img.shape[:2])
+
+        M,N = img.shape[:2]
+        for i in range(M):
+            for j in range(N):
+                leftInd  = i-k
+                rightInd = i +k
+                upInd = j-k
+                buttomInd = j+k
+
+                if upInd < 0:
+                    upInd = 0
+                if leftInd < 0:
+                    leftInd = 0
+                if rightInd > N:
+                    rightInd = N
+                if buttomInd > M:
+                    buttomInd = M
+                
+                resultFunc = func(img[upInd: buttomInd, leftInd : rightInd])                                
+                result[i,j] = resultFunc
+
+        return result

@@ -4,79 +4,11 @@ import  pdifunFixed  as pdi
 from matplotlib import pyplot as plt
 
 
-def adaptiveMedianFilter():
-    pass
-def stadistics(img):
-
-    mean = np.mean(img)
-    variance = np.var(img)
-    
-    return mean, variance
-
-def ALNRFilter(kernel,gVariance=50.0):
-    "Adaptive, Local Noise Reduction Filter"
-    mL, oL = stadistics(kernel)
-
-    M,N = kernel.shape[:2]
-    gxy = kernel[int(0.5*M),int(0.5*N)]
-    constVar = gVariance/oL
-    fxy = gxy - constVar*(gxy-mL)
-    
-    return fxy
-
-def midpointFilter(kernel):
-    nMin = np.min(kernel)
-    nMax = np.max(kernel)
-
-    midpoint =0.5*(nMax+nMin)
-
-    return midpoint
-
-def alphaTrimmedFilter(kernel,d=2):
-    sortedList= np.sort(kernel.ravel())
-    
-    return np.mean(sortedList[d:-d])
 
 
 class TP6:
     __BASEPATH= "img/TP6 - Restauracion y Reconstruccion/"
-    
-
-    
-    def media_no_lineal(self,img,ksize,func):
-        """
-        img: Source
-        ksize: Odd number
-        func: np.median , max , min
-        """
         
-        
-        k = ksize//2
-        
-        result = np.zeros(img.shape[:2])
-
-        M,N = img.shape[:2]
-        for i in range(M):
-            for j in range(N):
-                leftInd  = i-k
-                rightInd = i +k
-                upInd = j-k
-                buttomInd = j+k
-
-                if upInd < 0:
-                    upInd = 0
-                if leftInd < 0:
-                    leftInd = 0
-                if rightInd > N:
-                    rightInd = N
-                if buttomInd > M:
-                    buttomInd = M
-                
-                resultFunc = func(img[upInd: buttomInd, leftInd : rightInd])                                
-                result[i,j] = resultFunc
-
-        return result
-    
     def filtrosNoLineales(self):
         
         nameImage = self.__BASEPATH +  "ejemploRuido.jpg"        
@@ -194,9 +126,6 @@ class TP6:
 
     def ejercicio4(self):
         img = cv2.imread(self.__BASEPATH+"img_degradada.tif",0)
-        
-
-
  
         spectrum = pdi.spectrum(img)
 
@@ -210,16 +139,21 @@ class TP6:
         print('List of coordinates of maximum value in Numpy array : ')
         # zip the 2 arrays to get the exact coordinates
         listOfCordinates = list(zip(result[0], result[1]))
-        # travese over the list of cordinates
-        for cord in listOfCordinates:
-            print(cord)
+    
+        # for cord in listOfCordinates:
+        #     print(cord)
         
+        print listOfCordinates[2][0] , " - ", listOfCordinates[2][1]
+
         d = pdi.dist(listOfCordinates[2][0],listOfCordinates[2][1] )
+
+
+        print np.linalg.norm(np.array(5)-np.array(5))
         print "Distancia : ", d
 
         M,N = spectrum2.shape[:2]
         D = pdi.dist([0,0],[0.5*M,0.5*N])
-        print D 
+        print D , M , N
         Do = float(114/D)
 
         print "Frecuencia de corte : ", Do
@@ -228,19 +162,7 @@ class TP6:
 
         resultado = pdi.filtro_img(img,filtro)
 
-    
-
         plt.imshow(resultado,cmap='gray')
-
-
-
-
-
-
-
-        # result = np.uint8(spectrum2)
-        # plt.imshow(result,cmap='gray')
-        
         
         plt.show()
 
