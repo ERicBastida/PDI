@@ -85,17 +85,27 @@ def infoROI(img,show=True,all=False):
         r = cv2.selectROI(img)
         # Crop image
         image = img[int(r[1]):int(r[1]+r[3]), int(r[0]):int(r[0]+r[2])]
-    
-    _,_,C = img.shape
+    C = 1
+    if (len(img.shape) == 3):
+        _,_,C = img.shape
+
 
     _, axs = plt.subplots(int(C),1)
     histograms = []
-    for c in range(C):
-        
-        histC = histograma(image[:,:,c])
-        axs[int(c)].stem(range(len(histC)),histC,markerfmt=" ")
-        axs[int(c)].set_title("Channel "+ str(c))
+    if C == 1:
+        histC = histograma(image)
+        axs.stem(range(len(histC)),histC,markerfmt=" ")
+        axs.set_title("Channel "+ str(0))
         histograms.append(histC)
+    else:
+        for c in range(C):
+
+            histC = histograma(image[:,:,c])
+                
+            axs[int(c)].stem(range(len(histC)),histC,markerfmt=" ")
+            axs[int(c)].set_title("Channel "+ str(c))
+            histograms.append(histC)
+
     if show:
         plt.show()
 
@@ -191,16 +201,6 @@ def rotate(img, angle):
     else:
         return img
 
-def filterImg(img, filtro_magnitud):
-    """Filtro para im�genes de un canal"""
-
-    # como la fase del filtro es 0 la conversi�n de polar a cartesiano es directa (magnitud->x, fase->y)
-    filtro = np.array([filtro_magnitud, np.zeros(filtro_magnitud.shape)]).swapaxes(0, 2).swapaxes(0, 1)
-    imgf = cv2.dft(np.float32(img), flags=cv2.DFT_COMPLEX_OUTPUT)
-
-    imgf = cv2.mulSpectrums(imgf, np.float32(filtro), cv2.DFT_ROWS)
-
-    return cv2.idft(imgf, flags=cv2.DFT_REAL_OUTPUT | cv2.DFT_SCALE)
 
 def dist(a, b):
     """distancia Euclidea"""
@@ -633,42 +633,49 @@ def orderStatistcFilter(img,ksize,func):
     return result
 
 def filtro_img(img,filtro_magnitud):
-    # Filtro para im�genes de un canal
+    # Filtro para imagenes de un canal
 
-    #como la fase del filtro es 0 la conversi�n de polar a cartesiano es directa (magnitud->x, fase->y)
+    #como la fase del filtro es 0 la conversion de polar a cartesiano es directa (magnitud->x, fase->y)
     filtro=np.array([filtro_magnitud,np.zeros(filtro_magnitud.shape)]).swapaxes(0,2).swapaxes(0,1)
     
     plt.subplot(221)
     plt.title('Espectro del filtro')
     plt.imshow(filtro_magnitud,cmap='gray')
+    
 
     imgf=cv2.dft(np.float32(img), flags=cv2.DFT_COMPLEX_OUTPUT)
-
+    imgf  = np.fft.fftshift(imgf)
+    plt.colorbar()
     plt.subplot(222)
-    plt.title('Filtro en el dominio espacial')
+    plt.title('Especto de la imagen [Centrada]')
     plt.imshow(20*np.log(np.abs(imgf[:,:,0])),cmap='gray')
 
+
+
     resultFH =cv2.mulSpectrums(imgf, np.float32(filtro), cv2.DFT_ROWS)
+    plt.colorbar()
     plt.subplot(223)
     plt.title('Multiplicacion')
     plt.imshow(np.log(np.abs(resultFH[:,:,0])),cmap='gray')
+    resultFH  = np.fft.fftshift(resultFH)
     result_fg = cv2.idft(resultFH, flags=cv2.DFT_REAL_OUTPUT | cv2.DFT_SCALE)
+    plt.colorbar()
     plt.subplot(224)
     plt.title('Resultado del producto')
     plt.imshow(np.abs(result_fg),cmap='gray')
-    plt.show()
+    
     return result_fg
 
 def dist(a,b):
     # distancia euclidea
     return np.linalg.norm(np.array(a)-np.array(b))
 
-def filtro_gaussiaon(rows,cols,corte):
+def filtro_gaussiano(rows,cols,corte):
     # Filtro de magnitud gaussiano
 
     magnitud = np.zeros((rows, cols))
 
-    corte *= rows
+
     for k in range(rows):
         for l in range(cols):
             magnitud[k,l]=np.exp(-dist([k,l],[rows//2,cols//2])/2/corte/corte)
@@ -705,18 +712,42 @@ def filtro_ideal(rows, cols, corte,dx=0,dy=0,PasaBanda=True):
 
     return np.fft.ifftshift(magnitud)
 
-def filtro_butterworth(rows, cols, corte, order):
-    """ Filtro de magnitud Butterworth
-    corte = w en imagen de lado 1
-    1 \over 1 + {D \over w}^{2n}"""
-    magnitud = np.zeros((rows, cols))
-    corte *= rows
+
+def filtro_butterworth(rows, cols, corte,  order,PasaBanda = True,deltaP=[[0,0]]):
+    """ 
+    Filtro de magnitud Butterworth corte = D0 en imagen de lado 1
+    1 / 1 + {D / Do}^{2n}
+    corte: [Pixeles]
+    """
+    print " ------------------------------------------------------------ "
+    print "     Generando filtro de Butterworth, con ", len(deltaP), " puntos."
+    print " ------------------------------------------------------------ "
+    print  ""
+
+    Do = corte
+    H = np.ones((rows, cols))
+
+   
+
     for k in range(rows):
         for l in range(cols):
-            d2 = dist([k,l],[rows//2,cols//2])
-            magnitud[k,l] = 1.0/(1 + (d2/corte)**(order+order))
+            # Segun la cantidad de centros, pregunto y luego hago la productoria
+            # por defecto esta un punto en el centro, lo que me da la posibilidad de generalizar la funcion y obtener filtros en el origen
+            for i in range(len(deltaP)):
+                Duv  = np.linalg.norm(np.array([k,l])-np.array([rows//2 + deltaP[i][1], cols//2 + deltaP[i][0]]))            
+                Duv_ = np.linalg.norm(np.array([k,l])-np.array([rows//2 - deltaP[i][1], cols//2 - deltaP[i][0]]))
 
-    return np.fft.ifftshift(magnitud)
+                H[k,l] *= (1.0/(1 + (Do/Duv)**(2*order) )) * (1.0/(1 + (Do/Duv_)**(2*order) )) 
+
+    if PasaBanda:
+        H = 1 - H
+            
+    # newH = cv2.multiply(H,H_)
+    # newH = H + H_
+    # newH = cv2.normalize(newH, 0, 1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_16U)
+    # return np.fft.ifftshift(magnitud)
+    return H
+
 
 def motion_blur(size, a,  b):
     # Filtro de movimiento en direcciones a y b
@@ -1329,3 +1360,72 @@ def alphaTrimmedFilter(kernel,d=2):
                 result[i,j] = resultFunc
 
         return result
+
+
+def maximosCompFrecuenciales(spectrum,umbral,Dmin = 1):
+    "Recibo el espectro de la imagen (centrada) y retorno los componentes frecuenciales maximos "
+
+    _, img = cv2.threshold(spectrum,umbral,1,cv2.THRESH_BINARY)
+    plt.figure("Detector de componentes frecuenciales maximas")
+    plt.imshow(img,cmap='gray')
+    plt.show()
+    result = np.where(img == np.amax(img))
+    M,N = spectrum.shape[:2]
+    Cx = np.ones(result[0].shape)*int(N*0.5)
+    Cy = np.ones(result[0].shape)*int(M*0.5)
+
+    
+
+    um = result[1] - Cy 
+    vm = result[0] - Cx
+
+    freqMaxVal = []
+    for indx in range(len(um)):
+
+        if ((um[indx] > 0 and vm[indx] > 0) or (um[indx] > 0 and vm[indx] == 0) or (um[indx] == 0 and vm[indx] > 0)) :
+            D =  dist([um[indx],vm[indx]],[0,0])
+            if (D > 4):
+                freqMaxVal.append([um[indx],vm[indx]]) 
+    
+
+
+    listaOptima = puntosNoCercanos(freqMaxVal,Dmin)
+    
+    print "Puntos detectados ", listaOptima
+    return listaOptima
+
+def puntosNoCercanos(listaPuntos,D):
+
+    puntosGood = []
+    puntosAnalizados = listaPuntos
+    i = 0
+
+    while len(puntosAnalizados) > 0:
+        p = puntosAnalizados[i]
+
+        puntosAnalizados.remove(p)
+        distancias =  map(lambda x : dist(p,x), puntosAnalizados )
+
+
+        if len( filter(lambda x : x <= D,distancias ) ) == 0 :
+            puntosGood.append(p)
+
+
+            
+
+    
+    return puntosGood
+
+
+
+def errorMedioCuadratico(img, img_):
+    M,N = img.shape[:2]
+    suma = 0
+    for i in range(M):
+        for j in range(N):
+            suma += (img[i,j]- img_[i,j])**2
+
+    meanSquareError = suma/(N*M)
+
+    return meanSquareError
+    

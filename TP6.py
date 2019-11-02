@@ -2,7 +2,8 @@ import cv2
 import numpy as np
 import  pdifunFixed  as pdi
 from matplotlib import pyplot as plt
-
+import cmath
+import math
 
 
 
@@ -124,54 +125,116 @@ class TP6:
 
         # cv2.waitKey(0)
 
-    def ejercicio4(self):
-        img = cv2.imread(self.__BASEPATH+"img_degradada.tif",0)
- 
-        spectrum = pdi.spectrum(img)
 
-        val, spectrum2 = cv2.threshold(spectrum,0.8,1,cv2.THRESH_BINARY)
-        # plt.imshow()
-        result = np.where(spectrum2 == np.amax(spectrum2))
-
-       
-        print('Tuple of arrays returned : ', result)
-        
-        print('List of coordinates of maximum value in Numpy array : ')
-        # zip the 2 arrays to get the exact coordinates
-        listOfCordinates = list(zip(result[0], result[1]))
     
-        # for cord in listOfCordinates:
-        #     print(cord)
+    def ejercicio5(self):
+        "Filtrado Inverso"
+
+        nameImg = "ejemploRuido.jpg"
+        img = cv2.imread(self.__BASEPATH+nameImg,0)
+        M,N = img.shape[:2]
+ 
+        H = Hmovida(M,N,0.1,0.1)
         
-        print listOfCordinates[2][0] , " - ", listOfCordinates[2][1]
+        plt.figure("Imagen y H")
+        imgDegradada = pdi.filtro_img(img,H)
 
-        d = pdi.dist(listOfCordinates[2][0],listOfCordinates[2][1] )
-
-
-        print np.linalg.norm(np.array(5)-np.array(5))
-        print "Distancia : ", d
-
-        M,N = spectrum2.shape[:2]
-        D = pdi.dist([0,0],[0.5*M,0.5*N])
-        print D , M , N
-        Do = float(114/D)
-
-        print "Frecuencia de corte : ", Do
-        
-        filtro = pdi.filtro_ideal(M,N,10,70,90,False)
-
-        resultado = pdi.filtro_img(img,filtro)
-
-        plt.imshow(resultado,cmap='gray')
-        
+        #Solucion 1: Pseudo-Inverso
+        # R1 = inverseFiltering(H)
+        R3 = 1/H
+        #Solucion 2: Suavizar la relacion con un PasaBajos
+        # R2 = inverseFiltering(H,pseudo=False)
+        Do = 10
+        filtroPB = pdi.filtro_gaussiano(M,N,Do)
+        R2 = cv2.multiply(R3,filtroPB)
+        plt.figure("filtro gausiano")
+        plt.imshow(filtroPB,cmap='gray')
         plt.show()
+        plt.figure("Imagen Degradada y R")
+        pdi.filtro_img(imgDegradada,R2)
+        plt.show()
+
+    def ejercicio6(self):
+        #
+        nameImg = "FAMILIA_a.jpg"
+        # nameImg = "FAMILIA_b.jpg"
+        # nameImg = "FAMILIA_c.jpg"
+        img = cv2.imread(self.__BASEPATH+nameImg,0)
+        # M,N = img.shape[:2]
+
+        # plt.imshow(img,cmap='gray')
+        # plt.show()
+
+        print pdi.infoROI(img)
+
+
+
+def inverseFiltering(H):
+    R = np.zeros(H.shape)
+    e= 0.1 
+    for i in range(H.shape[0]):
+        for j in range(H.shape[0]):
+            if np.abs(H[i,j]) > e:
+                R[i,j] = 1/H[i,j]
+            else:
+                R[i,j] = 0                
+    return R
+            
+def inverseFdailtering(H):
+    R = np.zeros(H.shape)
+    e= 0.1
+    for i in range(H.shape[0]):
+        for j in range(H.shape[0]):
+            if np.abs(H[i,j]) > e:
+                R[i,j] = 1/H[i,j]
+            else:
+                R[i,j] = 0                
+    return R
+
+
+def Hmovida(M,N,a,b):
+    H = np.zeros((M,N))
+
+
+    for u in range(M):
+        for v in range(N):
+            
+            arg = cmath.pi*(u*a+v*b)
+            if arg == 0:
+                arg =0.01
+            ftr = (1/arg )
+            seno = math.sin(arg)
+            exponencial = cmath.exp(arg*0.j)
+            H[u,v] = 1 * seno * 1
+            # H[u,v]// =nc.real  
+            # H[u,v,1] =nc.imag  
+
+
+    return H
+
+
 
 if __name__=="__main__":
     
     tp6 = TP6()
 
     # tp6.ejercicio1()
-    tp6.ejercicio4()
+    # tp6.ejercicio4()
+    # tp6.ejercicio5()
+    tp6.ejercicio6()
     # tp6.filtrosNoLineales()
 
+    # l = [[12.0, 0.0], [13.0, 2.0], [15.0, 3.0], [17.0, 3.0], [2.0, 14.0], [2.0, 17.0], [0.0, 20.0]]
     
+
+
+    # def filterImg(img, filtro_magnitud):
+    # """Filtro para imgenes de un canal"""
+
+    # # como la fase del filtro es 0 la conversin de polar a cartesiano es directa (magnitud->x, fase->y)
+    # filtro = np.array([filtro_magnitud, np.zeros(filtro_magnitud.shape)]).swapaxes(0, 2).swapaxes(0, 1)
+    # imgf = cv2.dft(np.float32(img), flags=cv2.DFT_COMPLEX_OUTPUT)
+
+    # imgf = cv2.mulSpectrums(imgf, np.float32(filtro), cv2.DFT_ROWS)
+
+    # return cv2.idft(imgf, flags=cv2.DFT_REAL_OUTPUT | cv2.DFT_SCALE)
