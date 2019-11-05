@@ -96,7 +96,7 @@ def infoROI(img,show=True,all=False):
         histC = histograma(image)
         axs.stem(range(len(histC)),histC,markerfmt=" ")
         axs.set_title("Channel "+ str(0))
-        histograms.append(histC)
+        histograms = histC
     else:
         for c in range(C):
 
@@ -106,8 +106,6 @@ def infoROI(img,show=True,all=False):
             axs[int(c)].set_title("Channel "+ str(c))
             histograms.append(histC)
 
-    if show:
-        plt.show()
 
     return histograms 
 
@@ -474,20 +472,48 @@ def media_aritmetica(img,m,n):
 
 def media_armonica(img,m,n):
     img_aux = img.copy()
+    img_aux[np.where(img_aux==0)]=0.1
     img_aux = 1/img_aux
     kernel = np.ones((m, n), np.float32) / (m * n)
     result =cv2.filter2D(img_aux, -1, kernel)
+    result[np.where(result==0)]=0.1
     result = 1/result
     result *= m*m*n*n
     return result
 
 def media_geometrica(img,m,n):
-    rs,cs = img.shape[:2]
-    for r in range(rs):
-        for c  in range(cs):
-            if img[r,c] == 0:
-                img[r, c] = 1
-    return  np.uint8(np.exp(cv2.boxFilter(np.log(np.float32(img)), -1, (m, n))))
+
+    img[np.where(img == 0)] = 1
+
+    return  np.uint8(
+                np.exp(
+                    cv2.boxFilter(
+                        np.log(
+                            np.float32(img)
+                        ), -1, (m, n)
+                    )
+                )
+            )
+
+def media_contraArmonica(img,m,n,Q):
+
+    imgHere = img.astype('float64')
+
+    
+    imgQ1 = np.power(imgHere,Q+1)
+    imgQ = np.power(imgHere,Q)
+
+
+    kernel = np.ones((m, n), np.float32) 
+    
+    resultQ1 = cv2.filter2D(imgQ1, -1, kernel)
+    resultQ  = cv2.filter2D(imgQ, -1, kernel)
+
+    resultQ[np.where(resultQ==0)]=0.1
+
+    result = np.uint8(resultQ1/resultQ)
+
+    return result
 
 def generarImagenPatron():
     M = np.ones((300,300), np.uint8)*10
@@ -563,40 +589,7 @@ def gr_salPimienta(img, s_vs_p, cantidad):
 
     return imgWithNoise
 
-def filtroMediaGeometrica(img, m, n):
-    (s, t) = img.shape
-    img = np.float32(img)
-    for i in range(0, s-m+1):
-        for j in range(0, t-n+1):
-            acum = 1
-            for k in range(i, i+m):
-                for o in range(j, j+n):
-                    acum = acum * img[k, o]
-            img[i,j] = float(pow(acum, 1.0/(m*n)))
-    return np.uint8(img)
 
-def filtroMediaContraarmonica(img, Q, s, t):
-    (m, n) = img.shape
-    img = np.float32(img)
-    for i in range(0, m-s+1):
-        for j in range(0, n-t+1):
-            cont1 = 0
-            cont2 = 0
-            for k in range(i, i+s):
-                for o in range(j, j+t):
-                    cont1 = cont1 + np.power(img[k, o], Q+1)
-                    cont2 = cont2 + np.power(img[k, o], Q)
-            img[i, j] = cont1 / cont2
-    return np.uint8(img)
-
-def filtroMediaAlfaRecortada(img, s, t, d):
-    (m, n) = img.shape
-    for i in range(0, m-s):
-        for j in range(0, n-t):
-            cont = 0
-            for k in range(i, i+s):
-                for o in range(j, j+t):
-                    cont = cont + img[k, o]
 
 def orderStatistcFilter(img,ksize,func):
     """
@@ -613,10 +606,10 @@ def orderStatistcFilter(img,ksize,func):
     M,N = img.shape[:2]
     for i in range(M):
         for j in range(N):
-            leftInd  = i-k
-            rightInd = i +k
-            upInd = j-k
-            buttomInd = j+k
+            leftInd  = j-k -1
+            rightInd = j +k +1
+            upInd = i-k-1
+            buttomInd = i+k+1
 
             if upInd < 0:
                 upInd = 0
@@ -1262,6 +1255,7 @@ def pegar(imgA,mask,imgB):
     result = cv2.merge((E1,E2,E3))
 
     return result
+
 def autoSegmentador(img,infoCanales,umbrales):
    
     M,N = img.shape[:2]
@@ -1295,29 +1289,31 @@ def autoSegmentador(img,infoCanales,umbrales):
 
     return mask
 
-def adaptiveMedianFilter():
-    pass
 def stadistics(img):
+    "Funcion utilizada para el filtro adaptativo "
 
     mean = np.mean(img)
     variance = np.var(img)
     
     return mean, variance
 
-def ALNRFilter(kernel,gVariance=50.0):
+def ALNRFilter(kernel,gVariance=20.0):
     "Adaptive, Local Noise Reduction Filter"
-    mL, oL = stadistics(kernel)
-
     M,N = kernel.shape[:2]
-    gxy = kernel[int(0.5*M),int(0.5*N)]
-    constVar = gVariance/oL
-    fxy = gxy - constVar*(gxy-mL)
+    fxy = 0
+    if M != 0 and N != 0:
+        mL, oL = stadistics(kernel)
+
+    
+        gxy = kernel[int(0.5*M),int(0.5*N)]
+        constVar = gVariance/oL
+        fxy = gxy - constVar*(gxy-mL)
     
     return fxy
 
 def midpointFilter(kernel):
-    nMin = np.min(kernel)
-    nMax = np.max(kernel)
+    nMin = float(np.min(kernel))
+    nMax = float(np.max(kernel))
 
     midpoint =0.5*(nMax+nMin)
 
@@ -1360,7 +1356,6 @@ def alphaTrimmedFilter(kernel,d=2):
                 result[i,j] = resultFunc
 
         return result
-
 
 def maximosCompFrecuenciales(spectrum,umbral,Dmin = 1):
     "Recibo el espectro de la imagen (centrada) y retorno los componentes frecuenciales maximos "
@@ -1415,8 +1410,6 @@ def puntosNoCercanos(listaPuntos,D):
 
     
     return puntosGood
-
-
 
 def errorMedioCuadratico(img, img_):
     M,N = img.shape[:2]

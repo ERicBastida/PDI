@@ -31,9 +31,15 @@ class TP6:
 
         plt.show()
 
-    def ejercicio1(self):
+    def ejercicio1(self,nombreArchivo=None):
+        
+        nameFile = "ejemploRuido.jpg" 
+        
+        if (nombreArchivo != None):        
+            nameFile = nombreArchivo
 
-        nameImage = self.__BASEPATH +  "ejemploRuido.jpg"        
+        nameImage = self.__BASEPATH + nameFile     
+
         img = cv2.imread(nameImage,0)
 
         # print img.dtypeP
@@ -76,11 +82,11 @@ class TP6:
         plt.imshow(mediaAritmetica,cmap='gray')
         plt.subplot(232)
         plt.title("Media geometrica")
-        mediaGeometrica = pdi.filtroMediaGeometrica(img_noise,3,3)
+        mediaGeometrica = pdi.media_geometrica(img_noise,3,3)
         plt.imshow(mediaGeometrica,cmap='gray')
         plt.subplot(233)
         plt.title("Media ContraArmonica")
-        mediaContraArmnica = pdi.filtroMediaContraarmonica(img_noise,50,3,3)
+        mediaContraArmnica = pdi.media_contraArmonica(img_noise,50,3,3)
         plt.imshow(mediaContraArmnica,cmap='gray')
         plt.subplot(234)
         histoMediaAritmetica =  pdi.histograma(mediaAritmetica)
@@ -124,8 +130,6 @@ class TP6:
 
 
         # cv2.waitKey(0)
-
-
     
     def ejercicio5(self):
         "Filtrado Inverso"
@@ -156,18 +160,129 @@ class TP6:
 
     def ejercicio6(self):
         #
-        nameImg = "FAMILIA_a.jpg"
-        # nameImg = "FAMILIA_b.jpg"
-        # nameImg = "FAMILIA_c.jpg"
+        # nameImg = "FAMILIA_a.jpg"     #Gausiano o=10 Alfa recortado / Armonica
+        # nameImg = "FAMILIA_b.jpg"       #Uniforme  Geometrica/Armonica
+        nameImg = "FAMILIA_c.jpg"     #Sal and Pepper 5% 
+
         img = cv2.imread(self.__BASEPATH+nameImg,0)
-        # M,N = img.shape[:2]
 
-        # plt.imshow(img,cmap='gray')
-        # plt.show()
-
-        print pdi.infoROI(img)
+        # -------- Estimacion de los parametros del ruido -------- 
+        # histo = pdi.infoROI(img)
+        # stadisticsHisto(histo)
 
 
+        plt.figure("Original")
+
+        plt.subplot(121)
+        plt.imshow(img,cmap='gray')
+        histo1 = pdi.histograma(img)
+        plt.subplot(122)
+        plt.title("Hist Img Original")
+        plt.stem(range(len(histo1)),histo1,markerfmt='')
+
+
+        
+        plt.figure("Filtros Lineales")
+        plt.subplot(121)
+        # print "Media Aritmetica"
+        plt.title("Media Aritmetica")               
+        # filtrado = pdi.media_aritmetica(img,3,3)
+        # filtrado = pdi.media_geometrica(img,5,5)
+        # filtrado = pdi.media_armonica(img,3,3)
+        # filtrado = pdi.media_contraArmonica(img,3,3,-2)
+        func = pdi.ALNRFilter
+        # func = pdi.midpointFilter
+        # func = np.median
+        # func = pdi.alphaTrimmedFilter
+        filtrado = pdi.orderStatistcFilter(img,5,func)
+        plt.title("Imagen filtrada")
+        plt.imshow(filtrado,cmap='gray')
+        plt.subplot(122)
+        filtradoC = np.uint8(filtrado)
+        histoFiltro = pdi.histograma(filtradoC)
+        plt.stem(range(len(histoFiltro)),histoFiltro,markerfmt='')
+        plt.show()
+
+
+
+        # plt.subplot(232)
+        # print "Media geometrica"
+        # plt.title("Media geometrica")
+        # mediaGeometrica = pdi.filtroMediaGeometrica(img,3,3)
+        # plt.imshow(mediaGeometrica,cmap='gray')
+        # plt.subplot(233)
+        # plt.title("Media ContraArmonica")
+        # print "Media ContraArmonica"
+        # mediaContraArmnica = pdi.filtroMediaContraarmonica(img,-4,3,3)
+        # plt.imshow(mediaContraArmnica,cmap='gray')
+        # plt.subplot(234)
+        # histoMediaAritmetica =  pdi.histograma(mediaAritmetica)
+        # plt.stem(range(len(histoMediaAritmetica)),histoMediaAritmetica,markerfmt='')
+        # plt.subplot(235)
+        # histoMediaGeometrica = pdi.histograma(mediaGeometrica)
+        # plt.stem(range(len(histoMediaGeometrica)),histoMediaGeometrica,markerfmt='')
+        # plt.subplot(236)
+        # histoMediaContraArmnica = pdi.histograma(mediaContraArmnica)
+        # plt.stem(range(len(histoMediaContraArmnica)),histoMediaContraArmnica,markerfmt='')
+
+
+        # plt.figure("Filtros No Lineales")
+        # plt.subplot(231)
+        # plt.title("Mediana")
+        # plt.title("De orden mediana")
+        # mediaAritmetica = pdi.orderStatistcFilter(img,5,np.median)
+        # plt.imshow(mediaAritmetica,cmap='gray')
+        # plt.subplot(232)
+        # plt.title("Alfa recortado")
+        # print "Alfa recortado"
+        # mediaGeometrica = pdi.orderStatistcFilter(img,5,pdi.alphaTrimmedFilter)
+        # plt.imshow(mediaGeometrica,cmap='gray')
+        # plt.subplot(233)
+        # plt.title("Punto medio")
+        # mediaContraArmnica = pdi.orderStatistcFilter(img,5,pdi.midpointFilter)
+        # plt.imshow(mediaContraArmnica,cmap='gray')
+        # plt.subplot(234)
+        # histoMediaAritmetica =  pdi.histograma(np.uint8(mediaAritmetica))
+        # plt.stem(range(len(histoMediaAritmetica)),histoMediaAritmetica,markerfmt='')
+        # plt.subplot(235)
+        # histoMediaGeometrica = pdi.histograma(np.uint8(mediaGeometrica))
+        # plt.stem(range(len(histoMediaGeometrica)),histoMediaGeometrica,markerfmt='')
+        # plt.subplot(236)
+        # histoMediaContraArmnica = pdi.histograma(np.uint8(mediaContraArmnica))
+        # plt.stem(range(len(histoMediaContraArmnica)),histoMediaContraArmnica,markerfmt='')
+
+        
+
+
+
+
+def stadisticsHisto(histo):
+
+    mean = 0
+    variance = 0
+    MN = 0
+    hN = len(histo)
+    
+    for z in range(hN):
+        MN += histo[z]
+
+    print "Size: ", MN
+
+    for z in range(hN):
+        mean += histo[z]*z
+
+    mean = mean/MN
+
+    print "Mean: ", mean
+
+    for z in range(hN):
+        variance += histo[z]*(z-mean)**2
+    
+    variance = variance/MN
+
+    print "Desviation : ", math.sqrt(variance)
+
+    return float(mean), float(variance)
 
 def inverseFiltering(H):
     R = np.zeros(H.shape)
@@ -191,7 +306,6 @@ def inverseFdailtering(H):
                 R[i,j] = 0                
     return R
 
-
 def Hmovida(M,N,a,b):
     H = np.zeros((M,N))
 
@@ -211,7 +325,6 @@ def Hmovida(M,N,a,b):
 
 
     return H
-
 
 
 if __name__=="__main__":
