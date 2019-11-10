@@ -29,6 +29,18 @@ class imgObject:
 
         return self.area
 
+    def obtenerMascara(self,img):
+        base = np.zeros(img.shape[:2])
+        # isolateObj = cv2.drawContours(base, [self.contourn], -1, (255,255,255), 1, 8)
+     
+        # cv2.fillPoly(base, pts = self.contourn, color=(255,255,255))
+
+ 
+        cv2.fillConvexPoly(base, self.contourn, 255)
+        # cv2.fillPoly(base, self.contourn, 255)
+        return base
+
+
 
         
     def obtenerRectDetector(self):
@@ -50,8 +62,15 @@ class imgObject:
         
         return self.Pcenter
 
-    def dibujate(self,img):
+    def dibujate(self,img,description=""):
         cv2.drawContours(img, [self.contourn], -1, (0,255,255), 1, 8)
+
+        font                   = cv2.FONT_HERSHEY_SIMPLEX
+        # bottomLeftCornerOfText = (0,0)
+        fontScale              = 0.5
+        fontColor              = (255,0,0)
+        lineType               = 2
+        cv2.putText(img,description,self.obtenerCentroObjeto(),font,fontScale,fontColor,lineType)
         return img
         
 
@@ -64,7 +83,8 @@ def gestionarObjetos(mask):
     for i in range(len(contours)):
         
         newObject = imgObject(contours[i],i)
-        listObjects.append(newObject)
+        if newObject.obtenerArea() > 2:
+            listObjects.append(newObject)
 
     return listObjects
 
