@@ -57,7 +57,7 @@ class imgObject:
 
 
 def gestionarObjetos(mask):
-
+    "Recibe una mascara binaria y envia una lista de los objetos detectados"
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL , cv2.CHAIN_APPROX_SIMPLE)
     listObjects = []
 
@@ -85,6 +85,8 @@ def infoROI(img,show=True,all=False):
         r = cv2.selectROI(img)
         # Crop image
         image = img[int(r[1]):int(r[1]+r[3]), int(r[0]):int(r[0]+r[2])]
+    M,N = image.shape[:2]
+    print "El tamano de lo recortado es ", M, " x ", N
     C = 1
     if (len(img.shape) == 3):
         _,_,C = img.shape
@@ -136,6 +138,17 @@ def histograma(img):
     "Devuelve un vector con la cantidad de pixeles por intensidad de color"
     result = cv2.calcHist([img],[0],None,[256],[0,256])
     return result
+
+def histograma3C(img):
+    hisA = cv2.calcHist([img],[0],None,[256],[0,256])
+    hisB = cv2.calcHist([img],[1],None,[256],[0,256])
+    hisC = cv2.calcHist([img],[2],None,[256],[0,256])
+    
+    plt.plot(range(len(hisA)), hisA,'r')
+    plt.plot(range(len(hisB)), hisB,'g')
+    plt.plot(range(len(hisC)), hisC,'b')
+
+    return hisA,hisB,hisC
 
 def normalizar(img):
     M,N = img.shape[:2]
@@ -1422,3 +1435,67 @@ def errorMedioCuadratico(img, img_):
 
     return meanSquareError
     
+def compararHistogramas(imgA,imgB):
+
+    plt.figure()
+    plt.subplot(121)
+    img1 = equalizarIMG(imgA)
+    plt.imshow(img1)
+    plt.subplot(122)
+    img2 = equalizarIMG(imgB)
+    plt.imshow(img2)
+    plt.show()
+    # Convert it to HSV
+    img1_hsv = cv2.cvtColor(img1, cv2.COLOR_BGR2HSV)
+    img2_hsv = cv2.cvtColor(img2, cv2.COLOR_BGR2HSV)
+    
+    # Se compara el Hue y Saturation. Luego se normaliza
+    hist_img1 = cv2.calcHist([img1_hsv], [0,1], None, [180,256], [0,180,0,256])
+    cv2.normalize(hist_img1, hist_img1, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX)
+    print hist_img1
+    hist_img2 = cv2.calcHist([img2_hsv], [0,1], None, [180,256], [0,180,0,256])
+    cv2.normalize(hist_img2, hist_img2, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX)
+    
+    # find the metric value
+    # param= cv2.HISTCMP_CORREL
+    # param= cv2.HISTCMP_CHISQR
+    # param= cv2.HISTCMP_CHISQR_ALT
+    # param= cv2.HISTCMP_INTERSECT
+    param= cv2.HISTCMP_BHATTACHARYYA #Con este metodo, generalmente se considera diferencias entre 0 - 1.0, cuando > 0.75 se considera que existe mucha diferencia
+    # param= cv2.HISTCMP_HELLINGER
+    # param= cv2.HISTCMP_KL_DIV
+    metric_val = cv2.compareHist(hist_img1, hist_img2, param)
+
+
+    return metric_val
+
+def equalizarIMG(img):
+
+    C1,C2,C3 = cv2.split(img)
+
+    eC1 = cv2.equalizeHist(C1)
+    eC2 = cv2.equalizeHist(C2)
+    eC3 = cv2.equalizeHist(C3)
+
+    eqIMG = cv2.merge((eC1,eC2,eC3))
+
+    return eqIMG
+def histograma3C(img):
+    "Calcula y muestra el histograma para una imagen que contiene 3 canales"
+
+    hisA = cv2.calcHist([img],[0],None,[256],[0,256])
+    hisB = cv2.calcHist([img],[1],None,[256],[0,256])
+    hisC = cv2.calcHist([img],[2],None,[256],[0,256])
+    
+    plt.plot(range(len(hisA)), hisA,'r')
+    plt.plot(range(len(hisB)), hisB,'g')
+    plt.plot(range(len(hisC)), hisC,'b')
+
+    return hisA,hisB,hisC
+
+
+def infoSeg(mask,threshold):
+    M,N, = mask.shape[:2]
+    countSeg =  (mask > 0).sum()
+    porcentaje = float(countSeg)/float(M*N)
+    return porcentaje > threshold 

@@ -162,9 +162,12 @@ class TP6:
         #
         # nameImg = "FAMILIA_a.jpg"     #Gausiano o=10 Alfa recortado / Armonica
         # nameImg = "FAMILIA_b.jpg"       #Uniforme  Geometrica/Armonica
-        nameImg = "FAMILIA_c.jpg"     #Sal and Pepper 5% 
+        # nameImg = "FAMILIA_c.jpg"     #Sal and Pepper 5% Mediana
+        nameImg = "FAMILIA.jpg"     #Original
 
         img = cv2.imread(self.__BASEPATH+nameImg,0)
+
+
 
         # -------- Estimacion de los parametros del ruido -------- 
         # histo = pdi.infoROI(img)
@@ -190,10 +193,10 @@ class TP6:
         # filtrado = pdi.media_geometrica(img,5,5)
         # filtrado = pdi.media_armonica(img,3,3)
         # filtrado = pdi.media_contraArmonica(img,3,3,-2)
-        func = pdi.ALNRFilter
-        # func = pdi.midpointFilter
         # func = np.median
-        # func = pdi.alphaTrimmedFilter
+        # func = pdi.midpointFilter
+        # func = pdi.ALNRFilter
+        func = pdi.alphaTrimmedFilter
         filtrado = pdi.orderStatistcFilter(img,5,func)
         plt.title("Imagen filtrada")
         plt.imshow(filtrado,cmap='gray')
@@ -204,54 +207,7 @@ class TP6:
         plt.show()
 
 
-
-        # plt.subplot(232)
-        # print "Media geometrica"
-        # plt.title("Media geometrica")
-        # mediaGeometrica = pdi.filtroMediaGeometrica(img,3,3)
-        # plt.imshow(mediaGeometrica,cmap='gray')
-        # plt.subplot(233)
-        # plt.title("Media ContraArmonica")
-        # print "Media ContraArmonica"
-        # mediaContraArmnica = pdi.filtroMediaContraarmonica(img,-4,3,3)
-        # plt.imshow(mediaContraArmnica,cmap='gray')
-        # plt.subplot(234)
-        # histoMediaAritmetica =  pdi.histograma(mediaAritmetica)
-        # plt.stem(range(len(histoMediaAritmetica)),histoMediaAritmetica,markerfmt='')
-        # plt.subplot(235)
-        # histoMediaGeometrica = pdi.histograma(mediaGeometrica)
-        # plt.stem(range(len(histoMediaGeometrica)),histoMediaGeometrica,markerfmt='')
-        # plt.subplot(236)
-        # histoMediaContraArmnica = pdi.histograma(mediaContraArmnica)
-        # plt.stem(range(len(histoMediaContraArmnica)),histoMediaContraArmnica,markerfmt='')
-
-
-        # plt.figure("Filtros No Lineales")
-        # plt.subplot(231)
-        # plt.title("Mediana")
-        # plt.title("De orden mediana")
-        # mediaAritmetica = pdi.orderStatistcFilter(img,5,np.median)
-        # plt.imshow(mediaAritmetica,cmap='gray')
-        # plt.subplot(232)
-        # plt.title("Alfa recortado")
-        # print "Alfa recortado"
-        # mediaGeometrica = pdi.orderStatistcFilter(img,5,pdi.alphaTrimmedFilter)
-        # plt.imshow(mediaGeometrica,cmap='gray')
-        # plt.subplot(233)
-        # plt.title("Punto medio")
-        # mediaContraArmnica = pdi.orderStatistcFilter(img,5,pdi.midpointFilter)
-        # plt.imshow(mediaContraArmnica,cmap='gray')
-        # plt.subplot(234)
-        # histoMediaAritmetica =  pdi.histograma(np.uint8(mediaAritmetica))
-        # plt.stem(range(len(histoMediaAritmetica)),histoMediaAritmetica,markerfmt='')
-        # plt.subplot(235)
-        # histoMediaGeometrica = pdi.histograma(np.uint8(mediaGeometrica))
-        # plt.stem(range(len(histoMediaGeometrica)),histoMediaGeometrica,markerfmt='')
-        # plt.subplot(236)
-        # histoMediaContraArmnica = pdi.histograma(np.uint8(mediaContraArmnica))
-        # plt.stem(range(len(histoMediaContraArmnica)),histoMediaContraArmnica,markerfmt='')
-
-        
+       
 
 
 
