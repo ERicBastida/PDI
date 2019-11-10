@@ -1072,7 +1072,7 @@ def skeleton(self,img):
             
     return skeleton
 
-def convexHull(self,img):
+def convexHull(img):
         
     contours, _ = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     # im2, contours, hierarchy = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -1160,18 +1160,18 @@ def morphologicalReconstructionbyErotion(self,F,G,se,k):
 
     else:
         return RDk
-
-def morphologicalReconstructionbyDilation(self,F,G,se,k):
+                                 
+def morphologicalReconstructionbyDilation(F,G,se,k):
     if (k == 0):
         return F
     if (k == 1):
-        dilation_F_and_SE = opencv.dilate(F,se) 
-        R_D_1 =   opencv.bitwise_and( dilation_F_and_SE, G)
+        dilation_F_and_SE = cv2.dilate(F,se) 
+        R_D_1 =   cv2.bitwise_and( dilation_F_and_SE, G)
         return R_D_1
     
-    RDk_1 =  self.morphologicalReconstructionbyDilation(F,G,se,k-1)
-    dilation_RDK1_and_SE = opencv.dilate(RDk_1,se) 
-    RDk =   opencv.bitwise_and( dilation_RDK1_and_SE, G)
+    RDk_1 =  morphologicalReconstructionbyDilation(F,G,se,k-1)
+    dilation_RDK1_and_SE = cv2.dilate(RDk_1,se) 
+    RDk =   cv2.bitwise_and( dilation_RDK1_and_SE, G)
     if (np.array_equal(RDk,RDk_1)):
         
         print "MR by Dilation finished with ", k , " iterations."
@@ -1236,7 +1236,7 @@ def toBinary(self, A ,threshold=127):
     # retval, threshold = opencv.threshold(A,threshold,  255, opencv.THRESH_BINARY)
     print threshold
 
-def invertColor(self, img):
+def invertColor( img):
     rows,cols = img.shape
     copyImage = img
     # print img.shape
