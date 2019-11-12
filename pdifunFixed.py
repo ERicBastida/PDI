@@ -73,7 +73,14 @@ class imgObject:
         cv2.putText(img,description,self.obtenerCentroObjeto(),font,fontScale,fontColor,lineType)
         return img
         
-
+def gestionarObjetoMaximaArea(objetos):
+    objeto = None
+    areas = []
+    for o in objetos:
+        areas.append(o.obtenerArea())
+    i = np.argmax(areas)
+    objeto = objetos[i]
+    return objeto
 
 def gestionarObjetos(mask):
     "Recibe una mascara binaria y envia una lista de los objetos detectados"
