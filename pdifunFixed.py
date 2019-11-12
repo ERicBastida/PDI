@@ -1160,7 +1160,11 @@ def morphologicalReconstructionbyErotion(self,F,G,se,k):
 
     else:
         return RDk
-                                 
+def filtroMorfologico(mask,k,iter=1):
+    se = cv2.getStructuringElement(cv2.MORPH_RECT,(k,k))
+    # mask = cv2.morphologyEx(mask,cv2.MORPH_DILATE,se,iterations=1)
+    mask = cv2.morphologyEx(mask,cv2.MORPH_CLOSE,se,iterations=iter)
+    return mask                             
 def morphologicalReconstructionbyDilation(F,G,se,k):
     if (k == 0):
         return F
