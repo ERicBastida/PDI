@@ -13,7 +13,7 @@ class imgObject:
     indx = -1
     Pcenter = None
     area = None
-    detectorRect = (0,0,0,0)
+    detectorRect = None
     moments = None
     contourn = None
 
@@ -46,7 +46,7 @@ class imgObject:
     def obtenerRectDetector(self):
 
         if (self.detectorRect == None):
-            self.detectorRect = cv2.boundingRect(self.contourn)
+            self.detectorRect=   cv2.boundingRect(self.contourn)
 
         return self.detectorRect
 
@@ -975,7 +975,8 @@ def hough_Transform(img,threshold,thita_i = None,thita_f = None):
     linesP = []
     
     # Umbral min and max
-    bordes = cv2.Canny(img, 175, 225, apertureSize=3)
+    bordes = cv2.Canny(img, 175, 225, apertureSize=5)
+    bordes = img
     imgWithLines = img.copy()
     imgWithLines = cv2.cvtColor(imgWithLines,cv2.COLOR_GRAY2RGB)
 
@@ -997,7 +998,7 @@ def hough_Transform(img,threshold,thita_i = None,thita_f = None):
         
         
 
-    print "Total de lineas encontradas: ", totalLineas
+    # print "Total de lineas encontradas: ", totalLineas
     if totalLineas > 0:
         for line in lines:
             l = line[0] 
@@ -1033,7 +1034,7 @@ def hough_Transform(img,threshold,thita_i = None,thita_f = None):
 
 
 
-def skeleton(self,img):
+def skeleton(img):
             
     kSize = 3
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT,(kSize,kSize))
@@ -1059,15 +1060,15 @@ def skeleton(self,img):
         skeleton = cv2.bitwise_or(skeleton,Sk)
 
         # --- Interactive graphics
-        plt.figure(0)
-        plt.subplot(311),plt.imshow(eroded,cmap="gray"),plt.title("Eroded")
-        plt.subplot(312),plt.imshow(eroded_opening,cmap="gray"),plt.title("Eroded and Opening")
-        plt.subplot(313),plt.imshow(Sk,cmap="gray"),plt.title("Skeleton k ")
-        plt.figure(5)
-        plt.subplot(111),plt.imshow(skeleton,cmap="gray"),plt.title("Skeleton k = "  + str(k))
+        # plt.figure(0)
+        # plt.subplot(311),plt.imshow(eroded,cmap="gray"),plt.title("Eroded")
+        # plt.subplot(312),plt.imshow(eroded_opening,cmap="gray"),plt.title("Eroded and Opening")
+        # plt.subplot(313),plt.imshow(Sk,cmap="gray"),plt.title("Skeleton k ")
+        # plt.figure(5)
+        # plt.subplot(111),plt.imshow(skeleton,cmap="gray"),plt.title("Skeleton k = "  + str(k))
         
-        plt.pause(3)
-        plt.clf()
+        # plt.pause(3)
+        # plt.clf()
 
         img = eroded.copy()
                 
