@@ -695,9 +695,10 @@ def filtro_img(img,filtro_magnitud):
     plt.colorbar()
     plt.subplot(224)
     plt.title('Resultado del producto')
-    plt.imshow(np.abs(result_fg),cmap='gray')
+    resultado = np.abs(result_fg)
+    plt.imshow(resultado,cmap='gray')
     
-    return result_fg
+    return resultado
 
 def dist(a,b):
     # distancia euclidea
@@ -1020,9 +1021,9 @@ def hough_Transform(img,threshold,thita_i = None,thita_f = None):
             P1 = (x1, y1)
             P2 = (x2, y2)
             # Coordanas cartesianas
-            # linesP.append([P1,P2])
+            linesP.append([P1,P2])
             # Coordenadas Polares
-            linesP.append( (rho,theta) )
+            # linesP.append( (rho,theta) )
 
             cv2.line(imgWithLines, P1, P2, COLOR, 1)
         
@@ -1503,15 +1504,24 @@ def compararHistogramas(imgA,imgB):
 
 def equalizarIMG(img):
 
-    C1,C2,C3 = cv2.split(img)
+    if (len(img.shape) >2):
+        C1,C2,C3 = cv2.split(img)
 
-    eC1 = cv2.equalizeHist(C1)
-    eC2 = cv2.equalizeHist(C2)
-    eC3 = cv2.equalizeHist(C3)
+        eC1 = cv2.equalizeHist(C1)
+        eC2 = cv2.equalizeHist(C2)
+        eC3 = cv2.equalizeHist(C3)
 
-    eqIMG = cv2.merge((eC1,eC2,eC3))
+        eqIMG = cv2.merge((eC1,eC2,eC3))
 
-    return eqIMG
+        return eqIMG
+    else:
+       
+
+        img = cv2.equalizeHist(img)
+
+
+        return img
+
 def histograma3C(img):
     "Calcula y muestra el histograma para una imagen que contiene 3 canales"
 
@@ -1527,6 +1537,7 @@ def histograma3C(img):
 
 
 def infoSeg(mask,threshold):
+    "Retorna verdado si el objeto detectado tiene un porcentaje mayor al tamano de la imagen que se establecio"
     M,N, = mask.shape[:2]
     countSeg =  (mask > 0).sum()
     porcentaje = float(countSeg)/float(M*N)

@@ -5,7 +5,8 @@ from matplotlib import pyplot as plt
 import cmath
 import math
 
-
+# encoding: utf-8
+# TRABAJO PRACTICO Nro 6 - Restauracion y Reconstruccion
 
 class TP6:
     __BASEPATH= "img/TP6 - Restauracion y Reconstruccion/"
@@ -138,24 +139,30 @@ class TP6:
         img = cv2.imread(self.__BASEPATH+nameImg,0)
         M,N = img.shape[:2]
  
-        H = Hmovida(M,N,0.1,0.1)
+        # H = Hmovida(M,N,0.1,0.1)
+        H = pdi.filtro_butterworth(M,N,20,2)
         
         plt.figure("Imagen y H")
         imgDegradada = pdi.filtro_img(img,H)
 
-        #Solucion 1: Pseudo-Inverso
-        # R1 = inverseFiltering(H)
-        R3 = 1/H
-        #Solucion 2: Suavizar la relacion con un PasaBajos
-        # R2 = inverseFiltering(H,pseudo=False)
-        Do = 10
-        filtroPB = pdi.filtro_gaussiano(M,N,Do)
-        R2 = cv2.multiply(R3,filtroPB)
-        plt.figure("filtro gausiano")
-        plt.imshow(filtroPB,cmap='gray')
-        plt.show()
+        plt.figure("Imagen")
+        plt.imshow(imgDegradada,cmap='gray')
+        
+
+        # #Solucion 1: Pseudo-Inverso
+        R1 = inverseFiltering(H)
+        # R3 = 1/H
+        # #Solucion 2: Suavizar la relacion con un PasaBajos
+        # # R2 = inverseFiltering(H,pseudo=False)
+        # Do = 10
+        # filtroPB = pdi.filtro_gaussiano(M,N,Do)
+        # R2 = cv2.multiply(R3,filtroPB)
+        # plt.figure("filtro gausiano")
+        # plt.imshow(filtroPB,cmap='gray')
+        # plt.show()
         plt.figure("Imagen Degradada y R")
-        pdi.filtro_img(imgDegradada,R2)
+        imgRestaurada = pdi.filtro_img(imgDegradada,R1)
+        plt.imshow(imgRestaurada,cmap='gray')
         plt.show()
 
     def ejercicio6(self):
@@ -205,11 +212,6 @@ class TP6:
         histoFiltro = pdi.histograma(filtradoC)
         plt.stem(range(len(histoFiltro)),histoFiltro,markerfmt='')
         plt.show()
-
-
-       
-
-
 
 
 def stadisticsHisto(histo):
@@ -269,7 +271,7 @@ def Hmovida(M,N,a,b):
     for u in range(M):
         for v in range(N):
             
-            arg = cmath.pi*(u*a+v*b)
+            arg = math.pi*(u*a+v*b)
             if arg == 0:
                 arg =0.01
             ftr = (1/arg )
@@ -289,8 +291,8 @@ if __name__=="__main__":
 
     # tp6.ejercicio1()
     # tp6.ejercicio4()
-    # tp6.ejercicio5()
-    tp6.ejercicio6()
+    tp6.ejercicio5()
+    # tp6.ejercicio6()
     # tp6.filtrosNoLineales()
 
     # l = [[12.0, 0.0], [13.0, 2.0], [15.0, 3.0], [17.0, 3.0], [2.0, 14.0], [2.0, 17.0], [0.0, 20.0]]

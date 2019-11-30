@@ -1,0 +1,18 @@
+1) Deberia ser entre 120 y  160. Da 101    (+45)   I  A
+
+2) Deberia ser entre 45 y 70. Da 44       D A
+
+3) Deberia ser entre 290 y 340. Da 101    (+180)   +45?   D B
+
+4) Deberia ser entre 190 y 240. Da 79   (+180)  -45? I B
+
+5) Deberia ser entre 290 y 330. . Da 124   (+180) D B
+
+6) Deberia ser entre 210 y 250. Da 41   (+180) I B
+
+7) Deberia ser entre 210 y 250. Da 41   (+180) I B
+
+8) Deberia ser entre 110 y 160. Da 41   (+90) I A
+
+
+EL PATRON ES CUANDO ESTA ARRIBA

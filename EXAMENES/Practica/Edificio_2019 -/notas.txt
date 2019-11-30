@@ -1,0 +1,2 @@
+* los tamaños de los edificios pueden cambiar
+* POR PISO siempre hay 4 departamentos (HALLAR CANTIDAD DE PISOS NO MAS)

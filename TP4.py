@@ -7,15 +7,7 @@ from matplotlib import pyplot as plt
 import pdifunFixed as pdi
 
 
-def segmentadorRGB(img,r):
-    M,N = img.shape[:2]
 
-    for i in range(M):
-        for j in range(N):
-            
-
-def segmentadorHSI(img,deltaH):
-    pass
 
 class TP4:
     __basePath = "img/TP4 - Color/"
