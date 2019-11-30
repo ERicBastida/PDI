@@ -959,7 +959,7 @@ def bordesG_Sobel(img):
 
     return bordes_x,bordes_y
 
-def hough_Transform(img,threshold,thita_i = None,thita_f = None):
+def hough_Transform(img,threshold,thita_i = None,thita_f = None,polares = True):
     """ 
                                         Transformada de Hough
     Esta funcion ademas de calcular la transformada de Hough se puede establecer un rango de acumuladores, 
@@ -1006,6 +1006,7 @@ def hough_Transform(img,threshold,thita_i = None,thita_f = None):
 
             rho = l[0]
             theta = l[1]
+
             # print theta *180 / np.pi
 
             a = np.cos(theta)
@@ -1020,10 +1021,15 @@ def hough_Transform(img,threshold,thita_i = None,thita_f = None):
 
             P1 = (x1, y1)
             P2 = (x2, y2)
-            # Coordanas cartesianas
-            linesP.append([P1,P2])
-            # Coordenadas Polares
-            # linesP.append( (rho,theta) )
+
+
+            if (polares):
+                # Coordenadas Polares
+                linesP.append( (rho,theta) )
+            else:
+                # Coordanas cartesianas
+                linesP.append([P1,P2])
+
 
             cv2.line(imgWithLines, P1, P2, COLOR, 1)
         

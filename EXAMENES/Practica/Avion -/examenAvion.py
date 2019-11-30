@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
     trayectoMask = cv2.morphologyEx(trayectoMask,cv2.MORPH_CLOSE,cv2.getStructuringElement(cv2.MORPH_RECT,(7,7)))
     trayectoMask = cv2.morphologyEx(trayectoMask,cv2.MORPH_ERODE,cv2.getStructuringElement(cv2.MORPH_RECT,(7,7)),iterations=4)
-    imgLine,lines = pdi.hough_Transform(trayectoMask,50)
+    imgLine,lines = pdi.hough_Transform(trayectoMask,50,polares=false)
 
 
     plt.imshow(trayectoMask,cmap='gray')
@@ -70,6 +70,9 @@ if __name__ == "__main__":
         
     elif (len(lines) == 0):
         exit("No se encontraron lineas")
+    else:
+        imgLine,lines = pdi.hough_Transform(trayectoMask,50)
+
 
     print lines
     print calcularAngulo(lines[0][0],lines[0][1],centroAsteroide)
