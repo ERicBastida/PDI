@@ -966,7 +966,7 @@ def hough_Transform(img,threshold,thita_i = None,thita_f = None,polares = True,d
     como tambien el angulo aproximado de lineas que se desee detectar.
     -------------------------------------------------------------------------------------------------------
     Tener en mente que :
-        thita = [0 , 2 pi] y rho > 0 | hasta D , donde D es la distancia diagonal de la imagen (en pixeles)
+        thita = [0 , 360] y rho > 0 | hasta D , donde D es la distancia diagonal de la imagen (en pixeles)
         Y thita crece desde el eje x
     
     """
