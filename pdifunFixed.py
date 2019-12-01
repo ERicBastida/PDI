@@ -959,6 +959,17 @@ def bordesG_Sobel(img):
 
     return bordes_x,bordes_y
 
+def anguloPromedio(lines):
+    "Obtiene la lista de rectas en coordenadas polares"
+    cantLines = len(lines)
+    if ( cantLines == 0):
+        exit("No se puede calcular el angulo promedio sin rectas")
+    anguloPromedio = 0
+
+    for line in lines:
+        anguloPromedio += line[1]
+    return (anguloPromedio/cantLines) * 180 /math.pi
+    
 def hough_Transform(img,threshold,thita_i = None,thita_f = None,polares = True,debug=False):
     """ 
                                         Transformada de Hough
