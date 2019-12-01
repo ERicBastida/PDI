@@ -959,7 +959,7 @@ def bordesG_Sobel(img):
 
     return bordes_x,bordes_y
 
-def hough_Transform(img,threshold,thita_i = None,thita_f = None,polares = True):
+def hough_Transform(img,threshold,thita_i = None,thita_f = None,polares = True,debug=False):
     """ 
                                         Transformada de Hough
     Esta funcion ademas de calcular la transformada de Hough se puede establecer un rango de acumuladores, 
@@ -980,8 +980,8 @@ def hough_Transform(img,threshold,thita_i = None,thita_f = None,polares = True):
     bordes = img
     imgWithLines = img.copy()
     imgWithLines = cv2.cvtColor(imgWithLines,cv2.COLOR_GRAY2RGB)
-
-    cv2.imshow("Debug: Canny", bordes)
+    if (debug):
+        cv2.imshow("Debug: Canny", bordes)
 
     if thita_i != None and thita_f != None:
         "Hough necesita los angulos en radianes"
@@ -1333,9 +1333,11 @@ def autoSegmentador(img,infoCanales,umbrales):
             tC2.append(i)
         if infoCanales[2][i][0] > U3:
             tC3.append(i)
-
-    umbralCanalesMinimos= [tC1[0],tC2[0],tC3[0]]
-    umbralCanalesMaximos= [tC1[-1],tC2[-1],tC3[-1]]
+    if (len(tC1) and len(tC2) and len(tC3) ):
+        umbralCanalesMinimos= [tC1[0],tC2[0],tC3[0]]
+        umbralCanalesMaximos= [tC1[-1],tC2[-1],tC3[-1]]
+    else:
+        exit("Disminuya el umbral, ya que no se detectaron tantos pixeles con esa intensidades")
 
     mask = segmentador(img,umbralCanalesMinimos,umbralCanalesMaximos)
 
@@ -1545,6 +1547,6 @@ def histograma3C(img):
 def infoSeg(mask,threshold):
     "Retorna verdado si el objeto detectado tiene un porcentaje mayor al tamano de la imagen que se establecio"
     M,N, = mask.shape[:2]
-    countSeg =  (mask > 0).sum()
+    countSeg =  (mask > 0).sum()    
     porcentaje = float(countSeg)/float(M*N)
     return porcentaje > threshold 
