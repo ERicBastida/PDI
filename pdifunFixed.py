@@ -30,6 +30,7 @@ class imgObject:
         return self.area
 
     def obtenerMascara(self,img):
+        "Retorna la mascara del propio objeto dentro de la imagen"
         base = np.zeros(img.shape[:2])
         # isolateObj = cv2.drawContours(base, [self.contourn], -1, (255,255,255), 1, 8)
      
@@ -40,7 +41,15 @@ class imgObject:
         # cv2.fillPoly(base, self.contourn, 255)
         return base
 
-
+    def contieneColor(self,img,minColor,maxColor,porcentaje):
+        "Retorna verdadero si el propio objeto dentro de la imagen de color contiene al menos un porcentaje del color enviado"
+        mascaraObjeto =self.obtenerMascara(img)
+        objetoColor = masking(img,mascaraObjeto)
+        colorDentroDelObjeto = segmentador(objetoColor,minColor,maxColor)
+        areaObjeto =  (mascaraObjeto > 0).sum()    
+        areaColorDentroObjeto = (colorDentroDelObjeto > 0).sum()  
+        porcentajeColorDentroObjeto = areaColorDentroObjeto/ areaObjeto  
+        return porcentajeColorDentroObjeto > porcentaje 
 
         
     def obtenerRectDetector(self):
@@ -959,6 +968,17 @@ def bordesG_Sobel(img):
 
     return bordes_x,bordes_y
 
+def anguloPromedio(lines):
+    "Obtiene la lista de rectas en coordenadas polares"
+    cantLines = len(lines)
+    if ( cantLines == 0):
+        exit("No se puede calcular el angulo promedio sin rectas")
+    anguloPromedio = 0
+
+    for line in lines:
+        anguloPromedio += line[1]
+    return (anguloPromedio/cantLines) * 180 /math.pi
+
 def hough_Transform(img,threshold,thita_i = None,thita_f = None,polares = True,debug=False):
     """ 
                                         Transformada de Hough
@@ -966,7 +986,7 @@ def hough_Transform(img,threshold,thita_i = None,thita_f = None,polares = True,d
     como tambien el angulo aproximado de lineas que se desee detectar.
     -------------------------------------------------------------------------------------------------------
     Tener en mente que :
-        thita = [0 , 2 pi] y rho > 0 | hasta D , donde D es la distancia diagonal de la imagen (en pixeles)
+        thita = [0 , 360] y rho > 0 | hasta D , donde D es la distancia diagonal de la imagen (en pixeles)
         Y thita crece desde el eje x
     
     """
